@@ -46,7 +46,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
         $check_stmt->close();
     }
-    $stmt->close();  // If stmt exists
+   // $stmt->close();  // If stmt exists
 }
 $conn->close();
 ?>
@@ -59,7 +59,7 @@ $conn->close();
 <?php if (!empty($error)) { ?>
     <p style="color: red;"><?php echo htmlspecialchars($error); ?></p>
 <?php } ?>
-<form method="post" action="">
+<form method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
     First Name: <input type="text" name="first_name" required minlength="2"><br><br>
     Last Name: <input type="text" name="last_name" required minlength="2"><br><br>
     Email: <input type="email" name="email" required><br><br>

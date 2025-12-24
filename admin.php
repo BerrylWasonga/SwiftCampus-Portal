@@ -130,8 +130,14 @@ $conn->close();
     </style>
 </head>
 <body>
-    <h1>Admin Dashboard - Welcome, <?php echo htmlspecialchars($admin_name); ?>!</h1>
-    <p><a href="logout.php">Logout</a></p>
+   <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 10px 0; border-bottom: 2px solid #eee;">
+        <h1 style="margin: 0; font-size: 1.8em;">
+            Admin Dashboard - Welcome, <?php echo htmlspecialchars($admin_name); ?>!
+        </h1>
+        <a href="logout.php" style="color: #d00; font-weight: bold; text-decoration: none; font-size: 1.1em;">
+            Logout
+        </a>
+   </div>
 
     <?php if (!empty($message)) { ?><p class="message"><?php echo htmlspecialchars($message); ?></p><?php } ?>
     <?php if (!empty($error)) { ?><p class="error"><?php echo htmlspecialchars($error); ?></p><?php } ?>

@@ -66,7 +66,7 @@ $conn->close(); // Close database connection
 <?php if (!empty($error)) { ?>
     <p style="color: red;"><?php echo htmlspecialchars($error); ?></p>
 <?php } ?>
-<form method="post" action="">
+<form method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
     Email: <input type="email" name="email" required><br><br>  <!-- Updated: Email input -->
     Password: <input type="password" name="password" required><br><br>
     <button type="submit">Login</button>
