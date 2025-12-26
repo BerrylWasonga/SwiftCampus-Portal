@@ -156,15 +156,9 @@ $conn->close();
         .table th { background-color: #0d47a1; color: white; }
     </style>
 </head>
-<body class="p-4">
-
-<div class="d-flex justify-content-between align-items-center mb-5">
-    <div>
-        <h2 class="mb-0">Admin Dashboard</h2>
-        <p class="text-muted mb-0">Welcome, <?php echo htmlspecialchars($admin_name); ?>!</p>
-    </div>
-    <a href="logout.php" class="btn btn-danger btn-lg">Logout</a>
-</div>
+<body>
+    <h1>Admin Dashboard - Welcome, <?php echo htmlspecialchars($admin_name); ?>!</h1>
+    <p><a href="logout.php">Logout</a></p>
 
 <?php if (!empty($message)) echo $message; ?>
 <?php if (!empty($error)) echo "<div class='alert alert-danger'>$error</div>"; ?>

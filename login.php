@@ -115,42 +115,15 @@ $conn->close();
     </style>
 </head>
 <body>
-
-<div class="login-card text-center">
-    <!-- Chuka University Coat of Arms Logo -->
-    <img src="images/2.png" alt="Chuka University Logo" class="logo">
-
-    <?php if (!empty($error)): ?>
-        <div class="alert alert-danger mb-4"><?php echo htmlspecialchars($error); ?></div>
-    <?php endif; ?>
-
-    <form method="post" action="">
-        <div class="mb-3 text-start">
-            <label class="form-label">Reg. Number</label>
-            <input type="text" name="reg_no" class="form-control" placeholder="e.g. EB1/56145/21" required>
-        </div>
-
-        <div class="mb-3 text-start">
-            <label class="form-label">Password</label>
-            <input type="password" name="password" class="form-control" required>
-        </div>
-
-        <div class="mb-4 form-check text-start">
-            <input type="checkbox" class="form-check-input" id="remember">
-            <label class="form-check-label" for="remember">Remember me</label>
-        </div>
-
-        <button type="submit" class="btn btn-login btn-lg w-100">Log In</button>
-
-        <div class="mt-4">
-            <a href="#" class="text-cyan text-decoration-none">Forgot your password?</a>
-        </div>
-
-        <div class="mt-5 footer-text">
-            2025 © Designed by JumaWebHub
-        </div>
-    </form>
-</div>
-
+<h2>Login</h2>
+<?php if (!empty($error)) { ?>
+    <p style="color: red;"><?php echo htmlspecialchars($error); ?></p>
+<?php } ?>
+<form method="post" action="">
+    Email: <input type="email" name="email" required><br><br>  <!-- Updated: Email input -->
+    Password: <input type="password" name="password" required><br><br>
+    <button type="submit">Login</button>
+</form>
+Don't have an account?<a href="register.php"> Register</a>
 </body>
 </html>
