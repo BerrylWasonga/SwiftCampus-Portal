@@ -62,6 +62,7 @@ $conn->close();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Portal Login</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
         body {
             background-color: #f8f9fa;
@@ -79,9 +80,12 @@ $conn->close();
             padding: 40px 30px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         }
-        .logo {
-            width: 180px;
-            margin-bottom: 30px;
+         .logo {
+            margin-bottom: -75px;
+        }
+        .logo img {
+            width: 220px;
+            height: auto;
         }
         .form-control {
             background-color: #1b263b;
@@ -105,8 +109,52 @@ $conn->close();
         .btn-login:hover {
             background-color: #02b3e4;
         }
+        #password {
+    padding-right: 50px !important;  /* Ensures space for the toggle icon */
+}
+        .separator {
+            width: 100%;
+            height: 1px;
+            background-color: rgba(255, 255, 255, 0.3);
+            margin: 30px 0 25px 0;
+        }
+        .separator2 {
+            width: 100%;
+            height: 1px;
+            background-color: rgba(255, 255, 255, 0.7);
+            margin: 0 0 30px 0;
+        }
         .text-cyan {
             color: #40c4ff;
+        }
+         .toggle-password {
+        position: absolute;
+        right: 10px;                  /* Positions it nicely inside the input */
+        top: 60%;
+        transform: translateY(-30%);  /* Centers it vertically (adjust if needed) */
+        background: transparent;      /* No background to blend with dark theme */
+        border: none;
+        color: #778da9;               /* Matches your placeholder color */
+        cursor: pointer;
+        padding: 0;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;           /* Makes it circular */
+        transition: background 0.2s, color 0.2s;
+        z-index: 10;
+    }
+
+    .toggle-password:hover {
+        background: rgba(255, 255, 255, 0.1);  /* Subtle hover effect */
+        color: #40c4ff;                        /* Matches your cyan accent */
+    }
+
+    .toggle-password i {
+        font-size: 18px;
+    }
         }
         .footer-text {
             font-size: 0.85rem;
@@ -115,15 +163,65 @@ $conn->close();
     </style>
 </head>
 <body>
-<h2>Login</h2>
-<?php if (!empty($error)) { ?>
-    <p style="color: red;"><?php echo htmlspecialchars($error); ?></p>
-<?php } ?>
-<form method="post" action="">
-    Email: <input type="email" name="email" required><br><br>  <!-- Updated: Email input -->
-    Password: <input type="password" name="password" required><br><br>
-    <button type="submit">Login</button>
-</form>
-Don't have an account?<a href="register.php"> Register</a>
+
+<div class="login-card text-center">
+    <div class="logo">
+        <img src="images/2.png" alt="Chuka University Logo">
+    </div>
+
+    <div class="separator"></div>
+
+    <?php if (!empty($error)): ?>
+        <div class="alert alert-danger mb-4"><?php echo htmlspecialchars($error); ?></div>
+    <?php endif; ?>
+
+    <form method="post" action="">
+        <div class="mb-3 text-start">
+            <label class="form-label">Reg. Number</label>
+            <input type="text" name="reg_no" class="form-control" placeholder="e.g. EB1/56145/21" required>
+        </div>
+
+        <div class="mb-3 text-start position-relative">
+            <label class="form-label">Password</label>
+            <input type="password" name="password" id="password" class="form-control pe-5" required>  <!-- Added id and pe-5 for padding -->
+            <button type="button" class="toggle-password" onclick="togglePassword()">
+                <i class="fas fa-eye"></i>
+            </button>
+        </div>
+
+        <div class="mb-4 form-check text-start">
+            <input type="checkbox" class="form-check-input" id="remember">
+            <label class="form-check-label" for="remember">Remember me</label>
+        </div>
+
+        <button type="submit" class="btn btn-login btn-lg w-100">Log In</button>
+
+        <div class="mt-4">
+            <a href="#" class="text-cyan text-decoration-none">Forgot your password?</a>
+        </div>
+    
+        <div class="separator2"></div>
+
+        <div class="mt-5 footer-text">
+            2025 © Designed by JumaWebHub
+        </div>
+    </form>
+</div>
+<script>
+        function togglePassword() {
+            const passwordField = document.getElementById('password');
+            const toggleBtn = document.querySelector('.toggle-password i');
+            
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                toggleBtn.classList.remove('fa-eye');
+                toggleBtn.classList.add('fa-eye-slash');
+            } else {
+                passwordField.type = 'password';
+                toggleBtn.classList.remove('fa-eye-slash');
+                toggleBtn.classList.add('fa-eye');
+            }
+        }
+    </script>
 </body>
 </html>
