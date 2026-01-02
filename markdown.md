@@ -8,3 +8,4 @@
 - Protect welcome.php properly
 - use relative path for images
 - Added right padding to the password input so text doesn't overlap the button
+- use relative path for files inside folders in the main file
