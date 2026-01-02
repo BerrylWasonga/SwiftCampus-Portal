@@ -51,7 +51,7 @@ if (empty($full_name)) {
 <div class="container-fluid">
     <div class="row">
         <!-- Sidebar -->
-        <div class="col-md-3 col-lg-2 sidebar p-3">
+        <div class="col-md-3 col-lg-2 sidebar p-3 position-fixed" style="height: 100vh; overflow-y: auto; background-color: #495057; z-index: 1000;">
             <div class="text-center mb-4">
                 <img src="images/1.png" class="rounded-circle profile-img shadow" alt="Profile">
                 <h5 class="text-white mt-3"><?php echo htmlspecialchars($full_name); ?></h5>
@@ -59,19 +59,38 @@ if (empty($full_name)) {
             </div>
             <hr class="bg-secondary">
             <ul class="nav flex-column">
-                <li class="nav-item"><a href="#" class="nav-link active"><i class="bi bi-house-door"></i> Dashboard</a></li>
-                <li class="nav-item"><a href="#" class="nav-link"><i class="bi bi-person"></i> Personal Profile</a></li>
-                <li class="nav-item"><a href="#" class="nav-link"><i class="bi bi-book"></i> Course Registration</a></li>
+                <h5>Dashboard</h5>
+                <li class="nav-item"><a href="Welcome.php" class="nav-link"><i class="bi bi-person"></i> Personal Profile</a></li>
+
+                <h5>Academics</h5>
+                <li class="nav-item"><a href="students\course_registration.php" class="nav-link"><i class="bi bi-r-circle-fill"></i> Course Registration</a></li>
                 <li class="nav-item"><a href="#" class="nav-link"><i class="bi bi-calendar"></i> Time Table</a></li>
                 <li class="nav-item"><a href="#" class="nav-link"><i class="bi bi-file-text"></i> Academic Requisition</a></li>
+                <li class="nav-item"><a href="#" class="nav-link"><i class="bi bi-file-text"></i> Gown&Graduation Request</a></li>
+                <li class="nav-item"><a href="#" class="nav-link"><i class="bi bi-file-lock-fill"></i> Clearance Request</a></li>
+
+                <h5>Financials</h5>
                 <li class="nav-item"><a href="#" class="nav-link"><i class="bi bi-cash"></i> Fee Statement</a></li>
+                <li class="nav-item"><a href="#" class="nav-link"><i class="bi bi-cash"></i> Legacy Statement</a></li>
                 <li class="nav-item"><a href="#" class="nav-link"><i class="bi bi-receipt"></i> Receipts</a></li>
+                <li class="nav-item"><a href="#" class="nav-link"><i class="bi bi-folder2"></i> Generate Gate Pass</a></li>
+                <li class="nav-item"><a href="#" class="nav-link"><i class="bi bi-folder2"></i> Semester Proforma</a></li>
+
+                <h5>Accommodation</h5>
+                <li class="nav-item"><a href="#" class="nav-link"><i class="bi bi-align-start"></i> Hostel Booking</a></li>
+
+                <h5>Examination</h5>
+                <li class="nav-item"><a href="#" class="nav-link"><i class="bi bi-download"></i> Exam Card</a></li>
+                <li class="nav-item"><a href="#" class="nav-link"><i class="bi bi-cloud-arrow-down"></i> Transcript</a></li>
+
+                <h5>Setting</h5>
+                <li class="nav-item"><a href="#" class="nav-link"><i class="bi bi-gear"></i> Change password</a></li>
                 <li class="nav-item"><a href="logout.php" class="nav-link text-danger"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
             </ul>
         </div>
 
         <!-- Main Content -->
-        <div class="col-md-9 col-lg-10 p-4">
+        <div class="col-md-9 col-lg-10 offset-md-3 offset-lg-2 p-4" style="min-height: 100vh;">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2>Dashboard</h2>
                 <div>
