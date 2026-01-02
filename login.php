@@ -110,8 +110,8 @@ $conn->close();
             background-color: #02b3e4;
         }
         #password {
-    padding-right: 50px !important;  /* Ensures space for the toggle icon */
-}
+            padding-right: 50px !important;  /* Ensures space for the toggle icon */
+        }
         .separator {
             width: 100%;
             height: 1px;
@@ -203,7 +203,7 @@ $conn->close();
         <div class="separator2"></div>
 
         <div class="mt-5 footer-text">
-            2025 © Designed by JumaWebHub
+            <?php echo date('Y'); ?> © Designed by JumaWebHub
         </div>
     </form>
 </div>
