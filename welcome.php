@@ -44,10 +44,84 @@ if (empty($full_name)) {
         .card-header { background-color: #28a745; color: white; }
         .btn-view-doc { background-color: #e91e63; border: none; }
         .btn-view-doc:hover { background-color: #c2185b; }
+        /* Sidebar width when collapsed */
+        .sidebar.collapsed {
+            width: 80px !important;
+        }
+        .sidebar.collapsed .profile-section,
+        .sidebar.collapsed h5,
+        .sidebar.collapsed .nav-link span {
+            display: none;
+        }
+        .sidebar.collapsed .nav-link {
+            justify-content: center;
+        }
+
+        /* Navbar starts after sidebar (key fix) */
+        .ms-sidebar {
+            margin-left: 297px;           /* Same as sidebar width */
+            width: calc(100% - 290px);    /* Takes remaining width */
+            transition: margin-left 0.3s ease, width 0.3s ease;
+        }
+
+        /* When sidebar collapsed, adjust navbar */
+        .sidebar.collapsed ~ .ms-sidebar {
+            margin-left: 80px;
+            width: calc(100% - 80px);
+        }
+
+        /* Adjust main content margin when collapsed */
+        .sidebar.collapsed ~ .main-content {
+            margin-left: 80px;
+        }
     </style>
 </head>
 <body>
+    <!-- Fixed Top Navbar (Updated to match your app theme) -->
+    <nav class="navbar fixed-top ms-sidebar" style="background-color: #343a40; height: 80px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 1020;">
+    <div class="container-fluid d-flex align-items-center h-100">
+        <!-- Hamburger Button -->
+        <button class="hamburger-btn btn " id="toggleSidebar" style="font-size: 28px; padding: 0 20px;">
+            <i class="bi bi-list text-white"></i>
+        </button>
 
+        <!-- Spacer to push search + user to the right -->
+        <div class="flex-grow-1"></div>
+
+        <!-- Search Bar + User Dropdown (grouped on the right) -->
+        <div class="d-flex align-items-center gap-3">
+            <!-- Search Input -->
+            <form class="d-flex">
+                <input class="form-control rounded-pill px-4" 
+                       type="search" 
+                       placeholder="Search..." 
+                       aria-label="Search"
+                       style="width: 280px; background-color: #495057; border: none; color: white;">
+            </form>
+
+            <!-- User Dropdown -->
+            <div class="dropdown user-dropdown">
+                <a class="dropdown-toggle d-flex align-items-center text-white text-decoration-none" 
+                   href="#" 
+                   role="button" 
+                   data-bs-toggle="dropdown" 
+                   aria-expanded="false">
+                    <img src="images/1.png" 
+                         class="rounded-circle me-2" 
+                         width="40" 
+                         height="40" 
+                         alt="User">
+                    <span class="d-none d-md-inline"><?php echo htmlspecialchars($full_name); ?></span>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end shadow">
+                    <li><a class="dropdown-item" href="Welcome.php">Profile</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item text-danger" href="logout.php">Logout</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav>
 <div class="container-fluid">
     <div class="row">
         <!-- Sidebar -->
@@ -63,7 +137,7 @@ if (empty($full_name)) {
                 <li class="nav-item"><a href="Welcome.php" class="nav-link"><i class="bi bi-person"></i> Personal Profile</a></li>
 
                 <h5>Academics</h5>
-                <li class="nav-item"><a href="students\course_registration.php" class="nav-link"><i class="bi bi-r-circle-fill"></i> Course Registration</a></li>
+                <li class="nav-item"><a href="course_registration.php" class="nav-link"><i class="bi bi-r-circle-fill"></i> Course Registration</a></li>
                 <li class="nav-item"><a href="#" class="nav-link"><i class="bi bi-calendar"></i> Time Table</a></li>
                 <li class="nav-item"><a href="#" class="nav-link"><i class="bi bi-file-text"></i> Academic Requisition</a></li>
                 <li class="nav-item"><a href="#" class="nav-link"><i class="bi bi-file-text"></i> Gown&Graduation Request</a></li>
@@ -92,10 +166,7 @@ if (empty($full_name)) {
         <!-- Main Content -->
         <div class="col-md-9 col-lg-10 offset-md-3 offset-lg-2 p-4" style="min-height: 100vh;">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2>Dashboard</h2>
-                <div>
-                    <input type="search" class="form-control d-inline w-auto" placeholder="Search...">
-                </div>
+                <h2>Dashboard</h2>    
             </div>
 
             <!-- Basic Information Card -->
@@ -204,5 +275,10 @@ if (empty($full_name)) {
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.getElementById('toggleSidebar').addEventListener('click', function () {
+        document.getElementById('sidebar').classList.toggle('collapsed');
+    });
+</script>
 </body>
 </html>
