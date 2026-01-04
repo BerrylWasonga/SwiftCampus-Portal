@@ -114,7 +114,7 @@ if (empty($full_name)) {
                     <span class="d-none d-md-inline"><?php echo htmlspecialchars($full_name); ?></span>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end shadow">
-                    <li><a class="dropdown-item" href="Welcome.php">Profile</a></li>
+                    <li><a class="dropdown-item" href="welcome.php">Profile</a></li>
                     <li><hr class="dropdown-divider"></li>
                     <li><a class="dropdown-item text-danger" href="logout.php">Logout</a></li>
                 </ul>

@@ -20,3 +20,4 @@
 - Please commit your changes or stash them before you switch branches.
 - Git integrates all changes from other into main -> git merge other
 
+this brach irs not in the remote repository
