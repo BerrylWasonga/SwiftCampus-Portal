@@ -16,4 +16,8 @@
 - show only the current branch -> git branch --show-current
 - git push origin main -> git push <remote-name> <branch-name>
 - check if repository exist -> git remote -v
+- switching from one branch to another -> git switch <branch-name>
+- Please commit your changes or stash them before you switch branches.
+- Git integrates all changes from other into main -> git merge other
 
+this brach irs not in the remote repository
