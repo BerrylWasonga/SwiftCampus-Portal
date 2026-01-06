@@ -19,5 +19,7 @@
 - switching from one branch to another -> git switch <branch-name>
 - Please commit your changes or stash them before you switch branches.
 - Git integrates all changes from other into main -> git merge other
+- This command renames your current branch to main. For example, if your branch was previously called master, this will rename it to main. -> git branch -M main
+- This command links your local repository to a remote repository on GitHub. After this, Git knows where to push your changes online. -> git remote add origin https://github.com/YOUR_USERNAME/pms-project.git
 
 this brach irs not in the remote repository
