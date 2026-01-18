@@ -15,66 +15,141 @@ $admin_name = $full_name;
 // Current year (short)
 $current_year = date('y');
 
-// Course prefixes mapped to faculty and full programme name
-$course_prefixes = [
-    // Faculty of Science & Technology
-    'cs' => ['prefix' => 'EB1', 'name' => 'Bachelor of Science (Computer Science)'],
-    'acs' => ['prefix' => 'EB2', 'name' => 'Bachelor of Science (Applied Computer Science)'],
-    'bit' => ['prefix' => 'EB3', 'name' => 'Bachelor of Science (Business Information Technology)'],
-    'bio' => ['prefix' => 'EB4', 'name' => 'Bachelor of Science (Biology)'],
-    'math' => ['prefix' => 'EB5', 'name' => 'Bachelor of Science (Mathematics)'],
-
-    // Faculty of Nursing & Public Health
-    'nursing' => ['prefix' => 'CB1', 'name' => 'Bachelor of Science (Nursing)'],
-    'public_health' => ['prefix' => 'CB2', 'name' => 'Bachelor of Public Health'],
-    'nutrition' => ['prefix' => 'CB3', 'name' => 'Bachelor of Science (Human Nutrition & Dietetics)'],
-
-    // Faculty of Business Studies
-    'commerce' => ['prefix' => 'BB1', 'name' => 'Bachelor of Commerce'],
-    'procurement' => ['prefix' => 'BB2', 'name' => 'Bachelor of Procurement & Logistics Management'],
-    'entrepreneurship' => ['prefix' => 'BB3', 'name' => 'Bachelor of Entrepreneurship & Enterprise Management'],
-
-    // Faculty of Agriculture
-    'agriculture' => ['prefix' => 'AG1', 'name' => 'Bachelor of Science (Agriculture)'],
-    'horticulture' => ['prefix' => 'AG2', 'name' => 'Bachelor of Science (Horticulture)'],
-    'animal_science' => ['prefix' => 'AG3', 'name' => 'Bachelor of Science (Animal Science)'],
-
-    // Add more as needed...
-];
-
 // Handle form submissions
 $message = '';
 $error = '';
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    if (isset($_POST['add_student'])) {
-        $first_name = trim($_POST["first_name"]);
-        $last_name = trim($_POST["last_name"]);
-        $email = trim($_POST["email"]);
-        $course_key = $_POST["course"];
-        $gender = $_POST["gender"] ?? '';
-        $dob = $_POST["dob"] ?? '';
-        $address = trim($_POST["address"] ?? '');
-        $campus = $_POST["campus"] ?? 'MAIN';
-
-        if (empty($first_name) || empty($last_name) || empty($email) || empty($course_key)) {
-            $error = "Required fields are missing.";
-        } elseif (!array_key_exists($course_key, $course_prefixes)) {
-            $error = "Invalid course selected.";
-        } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $error = "Invalid email format.";
+// Add Faculty
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_faculty'])) {
+    $faculty_name = trim($_POST["faculty_name"]);
+    $faculty_code = trim($_POST["faculty_code"]);
+    
+    if (empty($faculty_name) || empty($faculty_code)) {
+        $error = "Faculty name and code are required.";
+    } else {
+        $check_stmt = $conn->prepare("SELECT id FROM faculties WHERE faculty_code = ?");
+        $check_stmt->bind_param("s", $faculty_code);
+        $check_stmt->execute();
+        if ($check_stmt->get_result()->num_rows > 0) {
+            $error = "Faculty code already exists.";
         } else {
-            // Check duplicate email
-            $check_stmt = $conn->prepare("SELECT id FROM users WHERE email = ?");
-            $check_stmt->bind_param("s", $email);
-            $check_stmt->execute();
-            if ($check_stmt->get_result()->num_rows > 0) {
-                $error = "Email already registered.";
-                $check_stmt->close();
+            $insert_stmt = $conn->prepare("INSERT INTO faculties (faculty_name, faculty_code) VALUES (?, ?)");
+            $insert_stmt->bind_param("ss", $faculty_name, $faculty_code);
+            if ($insert_stmt->execute()) {
+                $message = "<div class='alert alert-success alert-dismissible fade show'><i class='bi bi-check-circle-fill me-2'></i>Faculty added successfully!<button type='button' class='btn-close' data-bs-dismiss='alert'></button></div>";
             } else {
-                $course_info = $course_prefixes[$course_key];
-                $prefix = $course_info['prefix'];
-                $programme = $course_info['name'];
+                $error = "Failed to add faculty.";
+            }
+            $insert_stmt->close();
+        }
+        $check_stmt->close();
+    }
+}
+
+// Add Course/Programme
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_course'])) {
+    $course_name = trim($_POST["course_name"]);
+    $course_code = trim($_POST["course_code"]);
+    $faculty_id = $_POST["faculty_id"];
+    $level = $_POST["level"];
+    
+    if (empty($course_name) || empty($course_code) || empty($faculty_id) || empty($level)) {
+        $error = "All course fields are required.";
+    } else {
+        $check_stmt = $conn->prepare("SELECT id FROM courses WHERE course_code = ?");
+        $check_stmt->bind_param("s", $course_code);
+        $check_stmt->execute();
+        if ($check_stmt->get_result()->num_rows > 0) {
+            $error = "Course code already exists.";
+        } else {
+            $insert_stmt = $conn->prepare("INSERT INTO courses (course_name, course_code, faculty_id, level) VALUES (?, ?, ?, ?)");
+            $insert_stmt->bind_param("ssis", $course_name, $course_code, $faculty_id, $level);
+            if ($insert_stmt->execute()) {
+                $message = "<div class='alert alert-success alert-dismissible fade show'><i class='bi bi-check-circle-fill me-2'></i>Course added successfully!<button type='button' class='btn-close' data-bs-dismiss='alert'></button></div>";
+            } else {
+                $error = "Failed to add course.";
+            }
+            $insert_stmt->close();
+        }
+        $check_stmt->close();
+    }
+}
+
+// Delete Faculty
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_faculty'])) {
+    $faculty_id = $_POST["faculty_id"];
+    
+    // Check if faculty has courses
+    $check_stmt = $conn->prepare("SELECT COUNT(*) FROM courses WHERE faculty_id = ?");
+    $check_stmt->bind_param("i", $faculty_id);
+    $check_stmt->execute();
+    $count = $check_stmt->get_result()->fetch_row()[0];
+    $check_stmt->close();
+    
+    if ($count > 0) {
+        $error = "Cannot delete faculty with existing courses. Please delete courses first.";
+    } else {
+        $delete_stmt = $conn->prepare("DELETE FROM faculties WHERE id = ?");
+        $delete_stmt->bind_param("i", $faculty_id);
+        if ($delete_stmt->execute()) {
+            $message = "<div class='alert alert-success alert-dismissible fade show'><i class='bi bi-check-circle-fill me-2'></i>Faculty deleted successfully!<button type='button' class='btn-close' data-bs-dismiss='alert'></button></div>";
+        } else {
+            $error = "Failed to delete faculty.";
+        }
+        $delete_stmt->close();
+    }
+}
+
+// Delete Course
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_course'])) {
+    $course_id = $_POST["course_id"];
+    
+    $delete_stmt = $conn->prepare("DELETE FROM courses WHERE id = ?");
+    $delete_stmt->bind_param("i", $course_id);
+    if ($delete_stmt->execute()) {
+        $message = "<div class='alert alert-success alert-dismissible fade show'><i class='bi bi-check-circle-fill me-2'></i>Course deleted successfully!<button type='button' class='btn-close' data-bs-dismiss='alert'></button></div>";
+    } else {
+        $error = "Failed to delete course.";
+    }
+    $delete_stmt->close();
+}
+
+// Add Student
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_student'])) {
+    $first_name = trim($_POST["first_name"]);
+    $last_name = trim($_POST["last_name"]);
+    $email = trim($_POST["email"]);
+    $course_id = $_POST["course_id"];
+    $gender = $_POST["gender"] ?? '';
+    $dob = $_POST["dob"] ?? '';
+    $address = trim($_POST["address"] ?? '');
+    $campus = $_POST["campus"] ?? 'MAIN';
+
+    if (empty($first_name) || empty($last_name) || empty($email) || empty($course_id)) {
+        $error = "Required fields are missing.";
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $error = "Invalid email format.";
+    } else {
+        // Check duplicate email
+        $check_stmt = $conn->prepare("SELECT id FROM users WHERE email = ?");
+        $check_stmt->bind_param("s", $email);
+        $check_stmt->execute();
+        if ($check_stmt->get_result()->num_rows > 0) {
+            $error = "Email already registered.";
+            $check_stmt->close();
+        } else {
+            // Get course details
+            $course_stmt = $conn->prepare("SELECT course_code, course_name FROM courses WHERE id = ?");
+            $course_stmt->bind_param("i", $course_id);
+            $course_stmt->execute();
+            $course_result = $course_stmt->get_result();
+            
+            if ($course_result->num_rows == 0) {
+                $error = "Invalid course selected.";
+            } else {
+                $course_data = $course_result->fetch_assoc();
+                $prefix = $course_data['course_code'];
+                $programme = $course_data['course_name'];
                 $year_short = $current_year;
 
                 // Auto-generate next Reg. No
@@ -101,23 +176,29 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
                 // Insert student
                 $insert_stmt = $conn->prepare("INSERT INTO users 
-                    (first_name, last_name, email, password, reg_no, gender, dob, address, campus, programme, role, status)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'user', 'active')");
-                $insert_stmt->bind_param("ssssssssss", $first_name, $last_name, $email, $hashed_password, $reg_no, $gender, $dob, $address, $campus, $programme);
+                    (first_name, last_name, email, password, reg_no, gender, dob, address, campus, programme, course_id, role, status)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'user', 'active')");
+                $insert_stmt->bind_param("ssssssssssi", $first_name, $last_name, $email, $hashed_password, $reg_no, $gender, $dob, $address, $campus, $programme, $course_id);
 
                 if ($insert_stmt->execute()) {
-                    $message = "<div class='alert alert-success'>
-                        <strong>Student added successfully!</strong><br>
-                        Reg. No: <strong>$reg_no</strong><br>
-                        Programme: <strong>$programme</strong><br>
-                        Default Password: <strong>$default_password_plain</strong><br>
-                        <small>Student has been notified via email (in production). Advise them to change password on first login.</small>
+                    $message = "<div class='alert alert-success alert-dismissible fade show' role='alert'>
+                        <i class='bi bi-check-circle-fill me-2'></i><strong>Student added successfully!</strong><br>
+                        <div class='mt-2'>
+                            <strong>Registration Number:</strong> <span class='badge bg-primary fs-6'>$reg_no</span><br>
+                            <strong>Programme:</strong> $programme<br>
+                            <strong>Default Password:</strong> <code class='text-danger'>$default_password_plain</code>
+                        </div>
+                        <small class='d-block mt-2 text-muted'>
+                            <i class='bi bi-info-circle'></i> Student has been notified via email (in production). Advise them to change password on first login.
+                        </small>
+                        <button type='button' class='btn-close' data-bs-dismiss='alert' aria-label='Close'></button>
                     </div>";
                 } else {
                     $error = "Failed to add student.";
                 }
                 $insert_stmt->close();
             }
+            $course_stmt->close();
         }
     }
 }
@@ -139,6 +220,18 @@ $users_result = $users_stmt->get_result();
 $users = $users_result->fetch_all(MYSQLI_ASSOC);
 $users_stmt->close();
 
+// Fetch faculties
+$faculties_stmt = $conn->prepare("SELECT * FROM faculties ORDER BY faculty_name ASC");
+$faculties_stmt->execute();
+$faculties = $faculties_stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+$faculties_stmt->close();
+
+// Fetch courses with faculty info
+$courses_stmt = $conn->prepare("SELECT c.*, f.faculty_name FROM courses c LEFT JOIN faculties f ON c.faculty_id = f.id ORDER BY f.faculty_name, c.level, c.course_name");
+$courses_stmt->execute();
+$courses = $courses_stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+$courses_stmt->close();
+
 $conn->close();
 ?>
 
@@ -150,315 +243,899 @@ $conn->close();
     <title>Admin Dashboard - Chuka University</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet"/>
     <style>
-        body { background-color: #f8f9fa; }
-        .card { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        .table th { background-color: #0d47a1; color: white; }
+        :root {
+            --sidebar-width: 260px;
+            --navbar-height: 60px;
+        }
+        
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        /* Top Navbar */
+        .top-navbar {
+            background-color: #0d6efd;
+            height: var(--navbar-height);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1030;
+        }
+        
+        .top-navbar .navbar-brand {
+            font-weight: 700;
+            font-size: 1.3rem;
+            color: #fff !important;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: var(--navbar-height);
+            left: 0;
+            bottom: 0;
+            width: var(--sidebar-width);
+            background-color: #fff;
+            border-right: 1px solid #dee2e6;
+            overflow-y: auto;
+            transition: transform 0.3s ease;
+            z-index: 1020;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+        }
+        
+        .sidebar.collapsed {
+            transform: translateX(-100%);
+        }
+        
+        .sidebar-nav {
+            padding: 1rem 0;
+        }
+        
+        .sidebar-nav .nav-link {
+            color: #495057;
+            padding: 0.75rem 1.5rem;
+            border-left: 3px solid transparent;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+        
+        .sidebar-nav .nav-link:hover {
+            background-color: #f8f9fa;
+            color: #0d6efd;
+            border-left-color: #0d6efd;
+        }
+        
+        .sidebar-nav .nav-link.active {
+            background-color: rgba(13, 110, 253, 0.1);
+            color: #0d6efd;
+            border-left-color: #0d6efd;
+        }
+        
+        .sidebar-nav .nav-link i {
+            width: 20px;
+            margin-right: 0.75rem;
+        }
+        
+        /* Main Content */
+        .main-content {
+            margin-top: var(--navbar-height);
+            margin-left: var(--sidebar-width);
+            transition: margin-left 0.3s ease;
+            padding: 2rem;
+        }
+        
+        .main-content.expanded {
+            margin-left: 0;
+        }
+        
+        /* Cards */
+        .card {
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            margin-bottom: 1.5rem;
+        }
+        
+        .card-header {
+            background-color: #0d6efd;
+            color: white;
+            border: none;
+            border-radius: 8px 8px 0 0 !important;
+            padding: 1rem 1.25rem;
+            font-weight: 600;
+        }
+        
+        /* Statistics Cards */
+        .stat-card {
+            border-left: 4px solid #0d6efd;
+            transition: transform 0.2s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .stat-card.success {
+            border-left-color: #198754;
+        }
+        
+        .stat-card.info {
+            border-left-color: #0dcaf0;
+        }
+        
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0.5rem 0 0 0;
+        }
+        
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.875rem;
+            margin: 0;
+        }
+        
+        /* Tables */
+        .table thead th {
+            background-color: #0d6efd;
+            color: white;
+            border: none;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        
+        .table tbody tr {
+            transition: background-color 0.2s ease;
+        }
+        
+        .table tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+        
+        /* Forms */
+        .form-label {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 0.5rem;
+        }
+        
+        .form-control, .form-select {
+            border-radius: 6px;
+            border: 1px solid #ced4da;
+            padding: 0.625rem 0.875rem;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
+        }
+        
+        /* Buttons */
+        .btn {
+            border-radius: 6px;
+            padding: 0.625rem 1.25rem;
+            font-weight: 600;
+        }
+        
+        .btn-primary {
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+        }
+        
+        .btn-primary:hover {
+            background-color: #0b5ed7;
+            border-color: #0a58ca;
+        }
+        
+        /* Badges */
+        .badge {
+            padding: 0.4rem 0.8rem;
+            font-weight: 600;
+        }
+        
+        /* Select2 Customization */
+        .select2-container--bootstrap-5 .select2-selection {
+            border-radius: 6px !important;
+            border: 1px solid #ced4da !important;
+        }
+        
+        .select2-container--bootstrap-5.select2-container--focus .select2-selection {
+            border-color: #0d6efd !important;
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15) !important;
+        }
+        
+        /* Mobile Overlay */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: var(--navbar-height);
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1015;
+        }
+        
+        .sidebar-overlay.active {
+            display: block;
+        }
+        
+        /* Tab Styling */
+        .nav-tabs .nav-link {
+            color: #495057;
+            font-weight: 600;
+        }
+        
+        .nav-tabs .nav-link.active {
+            color: #0d6efd;
+            border-bottom: 2px solid #0d6efd;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 991.98px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.show {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .stat-value {
+                font-size: 1.5rem;
+            }
+            
+            .main-content {
+                padding: 1rem;
+            }
+        }
     </style>
 </head>
 <body>
-    <h1>Admin Dashboard - Welcome, <?php echo htmlspecialchars($admin_name); ?>!</h1>
-    <p><a href="logout.php">Logout</a></p>
-
-<?php if (!empty($message)) echo $message; ?>
-<?php if (!empty($error)) echo "<div class='alert alert-danger'>$error</div>"; ?>
-
-<div class="row mb-5">
-    <div class="col-md-4">
-        <div class="card text-center p-4">
-            <h5>Total Students & Staff</h5>
-            <h2 class="text-primary"><?php echo $total_users; ?></h2>
+    <!-- Top Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark top-navbar">
+        <div class="container-fluid">
+            <button class="btn btn-link text-white me-2" id="sidebarToggle">
+                <i class="bi bi-list fs-4"></i>
+            </button>
+            <a class="navbar-brand" href="#">
+                <i class="bi bi-mortarboard-fill me-2"></i>Chuka University
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle text-white d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-person-circle me-2 fs-5"></i>
+                            <span class="d-none d-md-inline"><?php echo htmlspecialchars($admin_name); ?></span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                            <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i>Profile</a></li>
+                            <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i>Settings</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="logout.php"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
         </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card text-center p-4">
-            <h5>Active Users</h5>
-            <h2 class="text-success"><?php echo $active_users; ?></h2>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card text-center p-4">
-            <h5>New Registrations Today</h5>
-            <h2 class="text-info"><?php echo $active_users; ?></h2> <!-- You can add query for today if needed -->
-        </div>
-    </div>
-</div>
+    </nav>
 
-<!-- Add New Student -->
-<div class="card mb-5">
-    <div class="card-header bg-primary text-white">
-        <h5><i class="bi bi-person-plus"></i> Add New Student</h5>
-    </div>
-    <div class="card-body">
-        <form method="post">
-            <input type="hidden" name="add_student" value="1">
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <label class="form-label">First Name *</label>
-                    <input type="text" name="first_name" class="form-control" required>
+    <!-- Sidebar Overlay (Mobile) -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <nav class="sidebar-nav">
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link active" href="#" data-section="dashboard">
+                        <i class="bi bi-speedometer2"></i>Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" data-section="students">
+                        <i class="bi bi-people"></i>Students
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" data-section="add-student">
+                        <i class="bi bi-person-plus"></i>Add Student
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" data-section="faculties">
+                        <i class="bi bi-building"></i>Manage Faculties
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" data-section="courses">
+                        <i class="bi bi-book"></i>Manage Courses
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content" id="mainContent">
+        <div class="container-fluid">
+            <!-- Alerts -->
+            <?php if (!empty($message)): ?>
+                <div class="row">
+                    <div class="col-12">
+                        <?php echo $message; ?>
+                    </div>
                 </div>
-                <div class="col-md-6">
-                    <label class="form-label">Last Name *</label>
-                    <input type="text" name="last_name" class="form-control" required>
+            <?php endif; ?>
+            
+            <?php if (!empty($error)): ?>
+                <div class="row">
+                    <div class="col-12">
+                        <div class='alert alert-danger alert-dismissible fade show' role='alert'>
+                            <i class='bi bi-exclamation-triangle-fill me-2'></i><strong>Error:</strong> <?php echo $error; ?>
+                            <button type='button' class='btn-close' data-bs-dismiss='alert'></button>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-md-12">
-                    <label class="form-label">Email *</label>
-                    <input type="email" name="email" class="form-control" required>
+            <?php endif; ?>
+
+            <!-- Dashboard Section -->
+            <div id="section-dashboard" class="content-section">
+                <!-- Page Header -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <h2 class="mb-1">Admin Dashboard</h2>
+                        <p class="text-muted">Welcome back, <?php echo htmlspecialchars($admin_name); ?>! Manage your students and system.</p>
+                    </div>
                 </div>
-                <div class="col-md-12">
-                    <label class="form-label">Programme *</label>
 
-                    <select name="course" id="course" class="form-select" required>
-                        <option value="">-- Select Programme --</option>
-
-                        <!-- ================= CERTIFICATE PROGRAMMES ================= -->
-
-                       <optgroup label="Certificate – Faculty of Science & Technology">
-                            <option value="cert_it">Certificate in Information Technology (CST1)</option>
-                            <option value="cert_comp">Certificate in Computer Applications (CST2)</option>
-                       </optgroup>
-
-                        <optgroup label="Certificate – Faculty of Business Studies">
-                            <option value="cert_business">Certificate in Business Management (CBU1)</option>
-                            <option value="cert_procurement">Certificate in Procurement & Logistics (CBU2)</option>
-                        </optgroup>
-
-                        <optgroup label="Certificate – Faculty of Agriculture">
-                            <option value="cert_agriculture">Certificate in Agriculture (CAG1)</option>
-                            <option value="cert_animal">Certificate in Animal Health & Production (CAG2)</option>
-                        </optgroup>
-
-                        <optgroup label="Certificate – Humanities & Social Sciences">
-                            <option value="cert_community">Certificate in Community Development (CH1)</option>
-                            <option value="cert_criminology">Certificate in Criminology & Security Studies (CH2)</option>
-                        </optgroup>
-
-                        <optgroup label="Certificate – Education">
-                            <option value="cert_ecde">Certificate in Early Childhood Development (CED1)</option>
-                        </optgroup>
-
-                        <optgroup label="Certificate – Health Sciences">
-                            <option value="cert_public_health">Certificate in Public Health (CHS1)</option>
-                        </optgroup>
-
-                        <!-- ================= DIPLOMA PROGRAMMES ================= -->
-
-                        <optgroup label="Diploma – Faculty of Science & Technology">
-                            <option value="dip_it">Diploma in Information Technology (DST1)</option>
-                            <option value="dip_comp">Diploma in Computer Science (DST2)</option>
-                        </optgroup>
-
-                        <optgroup label="Diploma – Faculty of Business Studies">
-                            <option value="dip_accounting">Diploma in Accounting (DBU1)</option>
-                            <option value="dip_business">Diploma in Business Management (DBU2)</option>
-                            <option value="dip_hr">Diploma in Human Resource Management (DBU3)</option>
-                            <option value="dip_procurement">Diploma in Procurement & Logistics Management (DBU4)</option>
-                        </optgroup>
-
-                        <optgroup label="Diploma – Faculty of Agriculture">
-                            <option value="dip_agriculture">Diploma in Agriculture (DAG1)</option>
-                            <option value="dip_horticulture">Diploma in Horticulture (DAG2)</option>
-                            <option value="dip_animal">Diploma in Animal Health & Production (DAG3)</option>
-                        </optgroup>
-
-                        <optgroup label="Diploma – Humanities & Social Sciences">
-                            <option value="dip_community">Diploma in Community Development (DH1)</option>
-                            <option value="dip_criminology">Diploma in Criminology & Security Studies (DH2)</option>
-                            <option value="dip_public_admin">Diploma in Public Administration (DH3)</option>
-                        </optgroup>
-
-                        <optgroup label="Diploma – Education">
-                            <option value="dip_ecde">Diploma in Early Childhood Education (DED1)</option>
-                        </optgroup>
-
-                        <optgroup label="Diploma – Health Sciences">
-                            <option value="dip_nursing">Diploma in Community Health Nursing (DHS1)</option>
-                            <option value="dip_health_records">Diploma in Health Records & Information Management (DHS2)</option>
-                        </optgroup>
-
-                        <!-- ================= DEGREE PROGRAMMES ================= -->
-
-                        <optgroup label="Faculty of Science & Technology">
-                            <option value="cs">B.Sc. Computer Science (EB1)</option>
-                            <option value="acs">B.Sc. Applied Computer Science (EB2)</option>
-                            <option value="bit">B.Sc. Business Information Technology (EB3)</option>
-                            <option value="bio">B.Sc. Biology (EB4)</option>
-                            <option value="math">B.Sc. Mathematics (EB5)</option>
-                            <option value="chem">B.Sc. Industrial Chemistry (EB6)</option>
-                            <option value="phy">B.Sc. Physics (EB7)</option>
-                        </optgroup>
-
-                        <optgroup label="School of Nursing & Public Health">
-                            <option value="nursing">B.Sc. Nursing (CB1)</option>
-                            <option value="public_health">Bachelor of Public Health (CB2)</option>
-                            <option value="nutrition">B.Sc. Human Nutrition & Dietetics (CB3)</option>
-                            <option value="health_records">B.Sc. Health Records & Information Management (CB4)</option>
-                        </optgroup>
-
-                        <optgroup label="Faculty of Business Studies">
-                            <option value="commerce">Bachelor of Commerce (BB1)</option>
-                            <option value="procurement">B. Procurement & Logistics Management (BB2)</option>
-                            <option value="entrepreneurship">B. Entrepreneurship & Enterprise Management (BB3)</option>
-                            <option value="coop">Bachelor of Co-operative Management (BB4)</option>
-                            <option value="economics">B.Sc. Economics & Statistics (BB5)</option>
-                        </optgroup>
-
-                        <optgroup label="Faculty of Agriculture & Environmental Studies">
-                            <option value="agriculture">B.Sc. Agriculture (AG1)</option>
-                            <option value="horticulture">B.Sc. Horticulture (AG2)</option>
-                            <option value="animal_science">B.Sc. Animal Science (AG3)</option>
-                            <option value="agribusiness">Bachelor of Agribusiness Management (AG4)</option>
-                            <option value="food_science">B.Sc. Food Science & Technology (AG5)</option>
-                            <option value="tourism">Bachelor of Tourism Management (AG6)</option>
-                            <option value="ecotourism">B.Sc. Ecotourism & Hospitality Management (AG7)</option>
-                        </optgroup>
-
-                        <optgroup label="Faculty of Humanities & Social Sciences">
-                            <option value="sociology">Bachelor of Arts (Sociology) (HA1)</option>
-                            <option value="criminology">B.A. Criminology & Security Studies (HA2)</option>
-                            <option value="communication">B.A. Communication & Media Studies (HA3)</option>
-                            <option value="community_dev">B.Sc. Community Development (HA4)</option>
-                            <option value="psychology">B.A. Psychology (HA5)</option>
-                        </optgroup>
-
-                        <optgroup label="Faculty of Education & Resources Development">
-                            <option value="bed_arts">Bachelor of Education (Arts) (ED1)</option>
-                            <option value="bed_science">Bachelor of Education (Science) (ED2)</option>
-                            <option value="ecde">B.Ed. Early Childhood Education (ED3)</option>
-                        </optgroup>
-
-                        <optgroup label="Faculty of Engineering">
-                            <option value="eee">B.Sc. Electrical & Electronics Engineering (EN1)</option>
-                        </optgroup>
-
-                        <optgroup label="School of Law">
-                            <option value="law">Bachelor of Laws (LL.B) (LW1)</option>
-                        </optgroup>
-
-
-                        <!-- ================= MASTERS PROGRAMMES ================= -->
-
-                        <optgroup label="Masters – Science & Technology">
-                            <option value="msc_cs" data-level="masters" data-kuccps="MSC501">
-                                M.Sc. Computer Science (MSC501)
-                            </option>
-                            <option value="msc_it" data-level="masters" data-kuccps="MSC502">
-                                M.Sc. Information Technology (MSC502)
-                            </option>
-                        </optgroup>
-
-                        <optgroup label="Masters – Business Studies">
-                            <option value="mba" data-level="masters" data-kuccps="MBA503">
-                                Master of Business Administration (MBA503)
-                            </option>
-                        </optgroup>
-
-                        <optgroup label="Masters – Education">
-                            <option value="med" data-level="masters" data-kuccps="MED504">
-                                Master of Education (MED504)
-                            </option>
-                        </optgroup>
-
-                        <!-- ================= PHD PROGRAMMES ================= -->
-
-                        <optgroup label="PhD – Science & Technology">
-                            <option value="phd_cs" data-level="phd" data-kuccps="PHD701">
-                                PhD in Computer Science (PHD701)
-                            </option>
-                        </optgroup>
-
-                        <optgroup label="PhD – Business & Management">
-                            <option value="phd_business" data-level="phd" data-kuccps="PHD702">
-                                PhD in Business Administration (PHD702)
-                            </option>
-                        </optgroup>
-
-                    </select>
+                <!-- Statistics Cards -->
+                <div class="row">
+                    <div class="col-xl-4 col-md-6 mb-3">
+                        <div class="card stat-card">
+                            <div class="card-body d-flex align-items-center">
+                                <div class="stat-icon bg-primary bg-opacity-10 text-primary me-3">
+                                    <i class="bi bi-people-fill"></i>
+                                </div>
+                                <div>
+                                    <p class="stat-label">Total Students & Staff</p>
+                                    <h3 class="stat-value text-primary"><?php echo $total_users; ?></h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-4 col-md-6 mb-3">
+                        <div class="card stat-card success">
+                            <div class="card-body d-flex align-items-center">
+                                <div class="stat-icon bg-success bg-opacity-10 text-success me-3">
+                                    <i class="bi bi-check-circle-fill"></i>
+                                </div>
+                                <div>
+                                    <p class="stat-label">Active Users</p>
+                                    <h3 class="stat-value text-success"><?php echo $active_users; ?></h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-4 col-md-6 mb-3">
+                        <div class="card stat-card info">
+                            <div class="card-body d-flex align-items-center">
+                                <div class="stat-icon bg-info bg-opacity-10 text-info me-3">
+                                    <i class="bi bi-person-x-fill"></i>
+                                </div>
+                                <div>
+                                    <p class="stat-label">Inactive Users</p>
+                                    <h3 class="stat-value text-info"><?php echo $total_users - $active_users; ?></h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-md-6">
-                    <label class="form-label">Gender</label>
-                    <select name="gender" class="form-select">
-                        <option value="">Select</option>
-                        <option value="Male">Male</option>
-                        <option value="Female">Female</option>
-                        <option value="Other">Other</option>
-                    </select>
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label">Date of Birth</label>
-                    <input type="date" name="dob" class="form-control">
-                </div>
-                <div class="col-md-8">
-                    <label class="form-label">Address</label>
-                    <input type="text" name="address" class="form-control">
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">Campus</label>
-                    <select name="campus" class="form-select">
-                        <option value="MAIN">MAIN</option>
-                        <option value="TOWN">TOWN</option>
-                    </select>
+
+                <!-- Quick Stats -->
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title"><i class="bi bi-building me-2"></i>Total Faculties</h5>
+                                <h2 class="text-primary mb-0"><?php echo count($faculties); ?></h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title"><i class="bi bi-book me-2"></i>Total Courses</h5>
+                                <h2 class="text-success mb-0"><?php echo count($courses); ?></h2>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <button type="submit" class="btn btn-success btn-lg w-100 mt-4">Add Student & Generate Credentials</button>
-        </form>
-    </div>
-</div>
 
-<!-- Users List -->
-<div class="card">
-    <div class="card-header bg-primary text-white">
-        <h5><i class="bi bi-people"></i> Registered Users</h5>
-    </div>
-    <div class="card-body p-0">
-        <div class="table-responsive">
-            <table class="table table-striped mb-0">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Name</th>
-                        <th>Reg. No</th>
-                        <th>Email</th>
-                        <th>Programme</th>
-                        <th>Role</th>
-                        <th>Status</th>
-                        <th>Last Login</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($users as $i => $u): ?>
-                        <?php 
-                        $u_name = trim($u['first_name'] . ' ' . $u['last_name']);
-                        if (empty($u_name)) $u_name = $u['email'];
-                        ?>
-                        <tr>
-                            <td><?php echo $i + 1; ?></td>
-                            <td><?php echo htmlspecialchars($u_name); ?></td>
-                            <td><strong><?php echo htmlspecialchars($u['reg_no'] ?? 'N/A'); ?></strong></td>
-                            <td><?php echo htmlspecialchars($u['email']); ?></td>
-                            <td><?php echo htmlspecialchars($u['programme'] ?? 'N/A'); ?></td>
-                            <td><?php echo $u['role']; ?></td>
-                            <td><?php echo $u['status']; ?></td>
-                            <td><?php echo $u['last_login'] ? date('d/m/Y H:i', strtotime($u['last_login'])) : 'Never'; ?></td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
+            <!-- Students Section -->
+            <div id="section-students" class="content-section" style="display:none;">
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <h2 class="mb-1">Student Management</h2>
+                        <p class="text-muted">View and manage all registered students</p>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <i class="bi bi-people-fill me-2"></i>Registered Users
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-hover mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Name</th>
+                                                <th>Reg. No</th>
+                                                <th>Email</th>
+                                                <th>Programme</th>
+                                                <th>Role</th>
+                                                <th>Status</th>
+                                                <th>Last Login</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php if (count($users) > 0): ?>
+                                                <?php foreach ($users as $i => $u): ?>
+                                                    <?php 
+                                                    $u_name = trim($u['first_name'] . ' ' . $u['last_name']);
+                                                    if (empty($u_name)) $u_name = $u['email'];
+                                                    ?>
+                                                    <tr>
+                                                        <td><?php echo $i + 1; ?></td>
+                                                        <td><strong><?php echo htmlspecialchars($u_name); ?></strong></td>
+                                                        <td><span class="badge bg-primary"><?php echo htmlspecialchars($u['reg_no'] ?? 'N/A'); ?></span></td>
+                                                        <td><?php echo htmlspecialchars($u['email']); ?></td>
+                                                        <td><small><?php echo htmlspecialchars($u['programme'] ?? 'N/A'); ?></small></td>
+                                                        <td>
+                                                            <?php if ($u['role'] == 'admin'): ?>
+                                                                <span class="badge bg-danger">Admin</span>
+                                                            <?php else: ?>
+                                                                <span class="badge bg-info">User</span>
+                                                            <?php endif; ?>
+                                                        </td>
+                                                        <td>
+                                                            <?php if ($u['status'] == 'active'): ?>
+                                                                <span class="badge bg-success">Active</span>
+                                                            <?php else: ?>
+                                                                <span class="badge bg-secondary">Inactive</span>
+                                                            <?php endif; ?>
+                                                        </td>
+                                                        <td><small class="text-muted"><?php echo $u['last_login'] ? date('d/m/Y H:i', strtotime($u['last_login'])) : 'Never'; ?></small></td>
+                                                    </tr>
+                                                <?php endforeach; ?>
+                                            <?php else: ?>
+                                                <tr>
+                                                    <td colspan="8" class="text-center py-5">
+                                                        <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
+                                                        <p class="text-muted mt-3 mb-0">No users found</p>
+                                                    </td>
+                                                </tr>
+                                            <?php endif; ?>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add Student Section -->
+            <div id="section-add-student" class="content-section" style="display:none;">
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <h2 class="mb-1">Add New Student</h2>
+                        <p class="text-muted">Register a new student in the system</p>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <i class="bi bi-person-plus-fill me-2"></i>Student Registration Form
+                            </div>
+                            <div class="card-body">
+                                <form method="post" id="studentForm">
+                                    <input type="hidden" name="add_student" value="1">
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label">First Name <span class="text-danger">*</span></label>
+                                            <input type="text" name="first_name" class="form-control" placeholder="Enter first name" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Last Name <span class="text-danger">*</span></label>
+                                            <input type="text" name="last_name" class="form-control" placeholder="Enter last name" required>
+                                        </div>
+                                        <div class="col-md-12">
+                                            <label class="form-label">Email Address <span class="text-danger">*</span></label>
+                                            <input type="email" name="email" class="form-control" placeholder="student@example.com" required>
+                                        </div>
+                                        <div class="col-md-12">
+                                            <label class="form-label">Programme <span class="text-danger">*</span></label>
+                                            <select name="course_id" id="courseSelect" class="form-select" required>
+                                                <option value="">-- Select Programme --</option>
+                                                <?php
+                                                $current_faculty = '';
+                                                $current_level = '';
+                                                foreach ($courses as $course):
+                                                    $faculty_changed = ($current_faculty != $course['faculty_name']);
+                                                    $level_changed = ($current_level != $course['level']);
+                                                    
+                                                    if ($faculty_changed && $current_faculty != '') {
+                                                        echo '</optgroup>';
+                                                    }
+                                                    
+                                                    if ($faculty_changed) {
+                                                        echo '<optgroup label="' . htmlspecialchars($course['faculty_name']) . '">';
+                                                        $current_faculty = $course['faculty_name'];
+                                                        $current_level = '';
+                                                    }
+                                                ?>
+                                                    <option value="<?php echo $course['id']; ?>">
+                                                        <?php echo htmlspecialchars($course['course_name']) . ' (' . htmlspecialchars($course['course_code']) . ')'; ?>
+                                                    </option>
+                                                <?php
+                                                    $current_level = $course['level'];
+                                                endforeach;
+                                                if ($current_faculty != '') echo '</optgroup>';
+                                                ?>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Gender</label>
+                                            <select name="gender" class="form-select">
+                                                <option value="">Select Gender</option>
+                                                <option value="Male">Male</option>
+                                                <option value="Female">Female</option>
+                                                <option value="Other">Other</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Date of Birth</label>
+                                            <input type="date" name="dob" class="form-control">
+                                        </div>
+                                        <div class="col-md-8">
+                                            <label class="form-label">Address</label>
+                                            <input type="text" name="address" class="form-control" placeholder="Enter physical address">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Campus</label>
+                                            <select name="campus" class="form-select">
+                                                <option value="MAIN">MAIN Campus</option>
+                                                <option value="TOWN">TOWN Campus</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="mt-4">
+                                        <button type="submit" class="btn btn-primary btn-lg w-100">
+                                            <i class="bi bi-plus-circle me-2"></i>Add Student & Generate Credentials
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Manage Faculties Section -->
+            <div id="section-faculties" class="content-section" style="display:none;">
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <h2 class="mb-1">Manage Faculties</h2>
+                        <p class="text-muted">Add, view, and manage university faculties</p>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <!-- Add Faculty Form -->
+                    <div class="col-lg-4 mb-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <i class="bi bi-plus-circle me-2"></i>Add New Faculty
+                            </div>
+                            <div class="card-body">
+                                <form method="post">
+                                    <input type="hidden" name="add_faculty" value="1">
+                                    <div class="mb-3">
+                                        <label class="form-label">Faculty Name <span class="text-danger">*</span></label>
+                                        <input type="text" name="faculty_name" class="form-control" placeholder="e.g., Faculty of Science & Technology" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Faculty Code <span class="text-danger">*</span></label>
+                                        <input type="text" name="faculty_code" class="form-control" placeholder="e.g., FST" required>
+                                        <small class="text-muted">Unique identifier for the faculty</small>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary w-100">
+                                        <i class="bi bi-plus-circle me-2"></i>Add Faculty
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Faculties List -->
+                    <div class="col-lg-8 mb-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <i class="bi bi-building me-2"></i>Existing Faculties
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-hover mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Faculty Name</th>
+                                                <th>Code</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php if (count($faculties) > 0): ?>
+                                                <?php foreach ($faculties as $i => $faculty): ?>
+                                                    <tr>
+                                                        <td><?php echo $i + 1; ?></td>
+                                                        <td><strong><?php echo htmlspecialchars($faculty['faculty_name']); ?></strong></td>
+                                                        <td><span class="badge bg-primary"><?php echo htmlspecialchars($faculty['faculty_code']); ?></span></td>
+                                                        <td>
+                                                            <form method="post" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this faculty? This action cannot be undone.');">
+                                                                <input type="hidden" name="delete_faculty" value="1">
+                                                                <input type="hidden" name="faculty_id" value="<?php echo $faculty['id']; ?>">
+                                                                <button type="submit" class="btn btn-sm btn-danger">
+                                                                    <i class="bi bi-trash"></i> Delete
+                                                                </button>
+                                                            </form>
+                                                        </td>
+                                                    </tr>
+                                                <?php endforeach; ?>
+                                            <?php else: ?>
+                                                <tr>
+                                                    <td colspan="4" class="text-center py-5">
+                                                        <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
+                                                        <p class="text-muted mt-3 mb-0">No faculties found. Add your first faculty above.</p>
+                                                    </td>
+                                                </tr>
+                                            <?php endif; ?>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Manage Courses Section -->
+            <div id="section-courses" class="content-section" style="display:none;">
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <h2 class="mb-1">Manage Courses/Programmes</h2>
+                        <p class="text-muted">Add, view, and manage university courses and programmes</p>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <!-- Add Course Form -->
+                    <div class="col-lg-4 mb-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <i class="bi bi-plus-circle me-2"></i>Add New Course
+                            </div>
+                            <div class="card-body">
+                                <form method="post">
+                                    <input type="hidden" name="add_course" value="1">
+                                    <div class="mb-3">
+                                        <label class="form-label">Course Name <span class="text-danger">*</span></label>
+                                        <input type="text" name="course_name" class="form-control" placeholder="e.g., Bachelor of Science (Computer Science)" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Course Code <span class="text-danger">*</span></label>
+                                        <input type="text" name="course_code" class="form-control" placeholder="e.g., EB1" required>
+                                        <small class="text-muted">Used for registration number generation</small>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Faculty <span class="text-danger">*</span></label>
+                                        <select name="faculty_id" class="form-select" required>
+                                            <option value="">-- Select Faculty --</option>
+                                            <?php foreach ($faculties as $faculty): ?>
+                                                <option value="<?php echo $faculty['id']; ?>">
+                                                    <?php echo htmlspecialchars($faculty['faculty_name']); ?>
+                                                </option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Level <span class="text-danger">*</span></label>
+                                        <select name="level" class="form-select" required>
+                                            <option value="">-- Select Level --</option>
+                                            <option value="Certificate">Certificate</option>
+                                            <option value="Diploma">Diploma</option>
+                                            <option value="Bachelor">Bachelor's Degree</option>
+                                            <option value="Masters">Master's Degree</option>
+                                            <option value="PhD">PhD</option>
+                                        </select>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary w-100">
+                                        <i class="bi bi-plus-circle me-2"></i>Add Course
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Courses List -->
+                    <div class="col-lg-8 mb-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <i class="bi bi-book me-2"></i>Existing Courses/Programmes
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-hover mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Course Name</th>
+                                                <th>Code</th>
+                                                <th>Faculty</th>
+                                                <th>Level</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php if (count($courses) > 0): ?>
+                                                <?php foreach ($courses as $i => $course): ?>
+                                                    <tr>
+                                                        <td><?php echo $i + 1; ?></td>
+                                                        <td><strong><?php echo htmlspecialchars($course['course_name']); ?></strong></td>
+                                                        <td><span class="badge bg-success"><?php echo htmlspecialchars($course['course_code']); ?></span></td>
+                                                        <td><small><?php echo htmlspecialchars($course['faculty_name'] ?? 'N/A'); ?></small></td>
+                                                        <td><span class="badge bg-info"><?php echo htmlspecialchars($course['level']); ?></span></td>
+                                                        <td>
+                                                            <form method="post" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this course? This action cannot be undone.');">
+                                                                <input type="hidden" name="delete_course" value="1">
+                                                                <input type="hidden" name="course_id" value="<?php echo $course['id']; ?>">
+                                                                <button type="submit" class="btn btn-sm btn-danger">
+                                                                    <i class="bi bi-trash"></i> Delete
+                                                                </button>
+                                                            </form>
+                                                        </td>
+                                                    </tr>
+                                                <?php endforeach; ?>
+                                            <?php else: ?>
+                                                <tr>
+                                                    <td colspan="6" class="text-center py-5">
+                                                        <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
+                                                        <p class="text-muted mt-3 mb-0">No courses found. Add your first course above.</p>
+                                                    </td>
+                                                </tr>
+                                            <?php endif; ?>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
-</div>
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-<script>
-$(document).ready(function () {
-    $('#course').select2({
-        placeholder: "-- Select Programme --",
-        allowClear: true,
-        width: '100%'
-    });
-});
-</script>
+    </main>
 
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            // Initialize Select2
+            $('#courseSelect').select2({
+                theme: 'bootstrap-5',
+                placeholder: "-- Select Programme --",
+                allowClear: true,
+                width: '100%'
+            });
+            
+            // Sidebar Toggle
+            const sidebar = $('#sidebar');
+            const mainContent = $('#mainContent');
+            const sidebarOverlay = $('#sidebarOverlay');
+            const sidebarToggle = $('#sidebarToggle');
+            
+            sidebarToggle.on('click', function() {
+                if (window.innerWidth <= 991.98) {
+                    sidebar.toggleClass('show');
+                    sidebarOverlay.toggleClass('active');
+                } else {
+                    sidebar.toggleClass('collapsed');
+                    mainContent.toggleClass('expanded');
+                }
+            });
+            
+            sidebarOverlay.on('click', function() {
+                sidebar.removeClass('show');
+                sidebarOverlay.removeClass('active');
+            });
+            
+            $(window).on('resize', function() {
+                if (window.innerWidth > 991.98) {
+                    sidebar.removeClass('show');
+                    sidebarOverlay.removeClass('active');
+                }
+            });
+            
+            // Section Navigation
+            $('.sidebar-nav .nav-link').on('click', function(e) {
+                e.preventDefault();
+                const section = $(this).data('section');
+                
+                // Update active link
+                $('.sidebar-nav .nav-link').removeClass('active');
+                $(this).addClass('active');
+                
+                // Hide all sections
+                $('.content-section').hide();
+                
+                // Show selected section
+                $('#section-' + section).show();
+                
+                // Close sidebar on mobile
+                if (window.innerWidth <= 991.98) {
+                    sidebar.removeClass('show');
+                    sidebarOverlay.removeClass('active');
+                }
+            });
+            
+            // Form validation
+            $('#studentForm').on('submit', function(e) {
+                var firstName = $('[name="first_name"]').val().trim();
+                var lastName = $('[name="last_name"]').val().trim();
+                var email = $('[name="email"]').val().trim();
+                var courseId = $('#courseSelect').val();
+                
+                if (!firstName || !lastName || !email || !courseId) {
+                    e.preventDefault();
+                    alert('Please fill in all required fields');
+                    return false;
+                }
+            });
+        });
+    </script>
 </body>
 </html>

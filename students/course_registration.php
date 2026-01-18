@@ -245,7 +245,7 @@ $currentSemester = "SEM1-25/26";
     </div>
 
     <footer>
-        © 2026 Designed by DSL Systems | Student Portal System
+        © 2026 Designed by Berryl Wasonga
     </footer>
 
 </body>
