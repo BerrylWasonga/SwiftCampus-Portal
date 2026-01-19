@@ -42,7 +42,7 @@
 
 - lint all PHP files in PowerShell -> Get-ChildItem -Recurse *.php | % { php -l $_ }
 
-- unstage all changes:-> git restore --staged <filename/.>
+
 git log
 
 this brach irs not in the remote repository
