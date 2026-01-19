@@ -31,6 +31,8 @@ if (empty($full_name)) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Dashboard</title>
+    <!-- favicon -->
+    <link rel="apple-touch-icon" href="images\2.png">
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
@@ -129,7 +131,7 @@ if (empty($full_name)) {
             overflow-x: hidden;
             padding: 1rem;
             scrollbar-width: thin;
-            scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+            scrollbar-color: rgba(255, 255, 255, 0.01) transparent;
         }
 
         /* Expanded sidebar scrollbar styles */
