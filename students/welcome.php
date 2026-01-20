@@ -8,7 +8,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
 }
 
 // Include database connection
-include 'config.php';
+include '../config.php';
 
 // Fetch ALL user details using the session user_id
 $stmt = $conn->prepare("SELECT * FROM users WHERE id = ?");
@@ -520,7 +520,7 @@ if (empty($full_name)) {
     <!-- ========== DESKTOP SIDEBAR (lg and up) ========== -->
     <div class="sidebar-desktop">
         <div class="profile-section text-center">
-            <img src="images/2.png" class="rounded-circle profile-img shadow" alt="Profile">
+            <img src="Assets/images/1.png" class="rounded-circle profile-img shadow" alt="Profile">
         </div>
         <div class="sidebar-menu">
             <ul class="nav flex-column">
@@ -777,7 +777,7 @@ if (empty($full_name)) {
 
             <!-- User Avatar (mobile: just avatar) -->
             <div class="d-lg-none">
-                <img src="images/1.png" 
+                <img src="../students/Assets/images/1.png" 
                      class="rounded-circle profile-img-small" 
                      alt="User">
             </div>

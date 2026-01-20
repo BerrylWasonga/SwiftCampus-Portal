@@ -203,7 +203,7 @@ $conn->close();
         <div class="separator2"></div>
 
         <div class="mt-5 footer-text">
-            <?php echo date('Y'); ?> © Designed by JumaWebHub
+            <?php echo date('Y'); ?> © Designed by BerrylWasonga
         </div>
     </form>
 </div>
