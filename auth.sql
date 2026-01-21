@@ -61,7 +61,7 @@ INSERT INTO `users` (`id`, `first_name`, `last_name`, `email`, `reg_no`, `passwo
 (12, 'Jocinta', 'Oballa', 'Jocinta@student.com', 'EB1/56147/21', '$2y$10$D3zLsTwMx2n/f5a1AvpNn.tSCXpaLf0xI2sFUZEWcPFdVKVrkDsfG', 'user', 'active', NULL, '2025-12-19 10:08:30', 'Female', '1998-01-01', '40600', 'MAIN', 'BSc. Computer Science', NULL, 0, 0),
 (13, 'Blessing', 'Wasonga', 'wasongaberryl3@gmail.com', 'EB1/00001/25', '$2y$10$eHUthtGWei8fEpW9OiJCE.eqoMUpXZHV9kxKs5T14rnUFEf1Cy2f6', 'user', 'active', '2025-12-20 07:51:57', '2025-12-20 07:30:52', 'Female', '2000-12-02', '40600', 'MAIN', 'BSc. Computer Science', NULL, 0, 0),
 (14, 'Beula', 'Faith', 'Wasongaprudence@gmail.com', 'EB1/00002/25', '$2y$10$dhnmagKZaZPwf3UrSrWvweuex3VEj.XTr4OHwlxedvqE02Yx5cJFC', 'user', 'active', NULL, '2025-12-20 07:59:24', '', '1999-02-01', '40600', 'MAIN', 'BSc. Computer Science', NULL, 0, 0),
-(15, 'Godpraise', 'Wasonga', 'wasongagodpraise@gmail.com', 'CB1/00001/25', '$2y$10$NlrNCUl3ffOTvPRo3gX0UOJYfEapgDNJwcl98bT/z0N8A4BOSfS9G', 'user', 'active', NULL, '2025-12-20 09:35:35', 'Male', '1986-01-07', '40607', 'MAIN', 'Bachelor of Science (Nursing)', NULL, 0, 0);
+(15, 'Godpraise', 'Wasonga', 'wasongagodpraise@gmail.com', 'CB1/00001/25', '$2y$10$eTBHYgB.XqGIlViEDo/xr..df8gEzBE7O.bckXZA71ZoMXEK0e.G.', 'user', 'active', NULL, '2025-12-20 09:35:35', 'Male', '1986-01-07', '40607', 'MAIN', 'Bachelor of Science (Nursing)', NULL, 0, 0);
 
 --
 -- Indexes for dumped tables

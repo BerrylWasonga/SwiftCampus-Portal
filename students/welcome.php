@@ -3,7 +3,7 @@ session_start();
 
 // Only allow logged-in students (role = 'user')
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
-    header("Location: login.php");
+    header("Location: ../login.php");
     exit();
 }
 
