@@ -32,6 +32,9 @@
 
 - how to revert a commit -> git revert <commit hash b02a271>
 - Check the result -> git log --oneline
+- reversing a staging message ->git restore --staged .
+- git reset -> Oops, I staged too many files. Let me unstage all.
+
 - check php version using the -> Get-ChildItem -Recurse -Filter *.php | Select-String "readonly class"
 - git reset --soft HEAD
 - git reset --soft HEAD~1
@@ -46,3 +49,37 @@
 git log
 
 this brach irs not in the remote repository
+git add -u <filename> -> it statges tracked files only
+- "new commands" | ForEach-Object { $_ | Tee-Object file4.txt; $_ | Tee-Object file5.txt }
+
+- Use a loop with an array of filenames
+   # Define your files
+$files = @(
+    "file1.txt","file2.txt","file3.txt","file4.txt",
+    "file5.txt","file6.txt","file7.txt","file8.txt",
+    "file9.txt","file10.txt","file11.txt","file12.txt",
+    "file13.txt","file14.txt","file15.txt","file16.txt"
+)
+
+# Define your content (can be multi-line code)
+$content = @"
+echo "Line 1"
+echo "Line 2"
+# Add more code here
+"@
+
+# Write content to all files
+foreach ($f in $files) {
+    $content | Set-Content $f
+}
+
+- how to create a file -> New-Item <filename>
+- modyfiying existing -> echo "new line" >> file1.txt
+- if you use echo "new line" > file1.txt on exiting file it overides everything
+- remove a file rm <filename>
+
+- This is the big difference:
+
+git add . → relative to current folder
+
+git add -A → absolute repo-wide, stages everything

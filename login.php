@@ -37,7 +37,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     if ($user['role'] === 'admin') {
                         header("Location: admin.php");
                     } else {
-                        header("Location: welcome.php");
+                        header("Location: students/welcome.php");
                     }
                     exit();
                 } else {
@@ -166,7 +166,7 @@ $conn->close();
 
 <div class="login-card text-center">
     <div class="logo">
-        <img src="images/2.png" alt="Chuka University Logo">
+        <img src="students/Assets/images/2.png" alt="Chuka University Logo">
     </div>
 
     <div class="separator"></div>
