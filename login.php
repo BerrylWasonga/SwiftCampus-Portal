@@ -35,7 +35,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     $update_login->close();
 
                     if ($user['role'] === 'admin') {
-                        header("Location: admin.php");
+                        header("Location: admin/admin.php");
                     } else {
                         header("Location: students/welcome.php");
                     }
