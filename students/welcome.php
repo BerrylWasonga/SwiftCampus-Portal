@@ -180,9 +180,3 @@ $doc_stmt->close();
 
 </body>
 </html>
-<?php 
-// Close connection at the very end
-if (isset($conn) && $conn instanceof mysqli) {
-    $conn->close();
-}
-?>

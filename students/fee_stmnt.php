@@ -18,7 +18,7 @@ $user = $stmt->get_result()->fetch_assoc();
 $stmt->close();
 
 // Get fee payment details joined with semester info
-$query = "SELECT fp.*, s.semester_name, s.semester_code, ay.year_name 
+$query = "SELECT fp.*, s.semester_name, ay.year_name 
           FROM fee_payments fp 
           JOIN semesters s ON fp.semester_id = s.id 
           JOIN academic_years ay ON s.academic_year_id = ay.id 

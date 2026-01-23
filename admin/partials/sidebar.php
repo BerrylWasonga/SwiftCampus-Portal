@@ -32,6 +32,11 @@
                                 </a>
                             </li>
                             <li class="nav-item">
+                                <a class="nav-link" href="/mini-auth-project/admin/student/documents.php">
+                                    <i class="bi bi-calendar"></i> Timetable
+                                </a>
+                            </li>
+                            <li class="nav-item">
                                 <a class="nav-link" href="/mini-auth-project/admin/registrations.php">
                                     <i class="bi bi-check-circle"></i> Registrations
                                 </a>

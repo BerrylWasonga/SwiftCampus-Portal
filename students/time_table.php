@@ -34,7 +34,10 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
         </div>
     </div>
     
-    <?php include_once 'partials/footer.php'; ?>
+    <?php
+       include_once 'partials/footer.php'; 
+    ?>
+    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="Assets/main.js"></script>
 </body>
