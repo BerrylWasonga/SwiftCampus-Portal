@@ -16,13 +16,19 @@ $stmt->bind_param("i", $_SESSION['user_id']);
 $stmt->execute();
 $user = $stmt->get_result()->fetch_assoc();
 $stmt->close();
-$conn->close();
 
 // Build full name safely
 $full_name = trim($user['first_name'] . ' ' . $user['last_name']);
 if (empty($full_name)) {
     $full_name = $user['email'] ?? 'User';
 }
+
+// Fetch documents BEFORE including any partials
+$doc_stmt = $conn->prepare("SELECT * FROM student_documents WHERE user_id = ? ORDER BY created_at DESC");
+$doc_stmt->bind_param("i", $_SESSION['user_id']);
+$doc_stmt->execute();
+$documents = $doc_stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+$doc_stmt->close();
 ?>
 
 <!DOCTYPE html>
@@ -115,56 +121,55 @@ if (empty($full_name)) {
             </div>
         </div>
 
-        <!-- Important Documents Section -->
-        <div class="card mb-3 mb-md-5">
-            <div class="card-header"><h5 class="mb-0">Important Documents</h5></div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-bordered table-hover mb-0">
-                        <thead class="table-dark">
-                            <tr>
-                                <th class="d-none d-md-table-cell" style="width: 5%;">#</th>
-                                <th style="width: 50%;">File Name</th>
-                                <th class="d-none d-lg-table-cell" style="width: 25%;">Remarks</th>
-                                <th style="width: 10%;">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr style=" height: 70px; vertical-align: middle;">
-                                <td class="d-none d-md-table-cell">1</td>
-                                <td>
-                                    <div class="d-md-none small text-muted mb-1">#1</div>
-                                    Student-handbook-August-2024.docx
-                                </td>
-                                <td class="d-none d-lg-table-cell"></td>
-                                <td>
-                                    <a href="https://www.chuka.ac.ke/storage/2024/08/Student-handbook-August-2024.docx.pdf" 
-                                       target="_blank" 
-                                       class="btn btn-view-doc btn-sm text-white">
-                                        <i class="bi bi-eye me-1 d-none d-sm-inline"></i>View Document
-                                    </a>
-                                </td>
-                            </tr>
-                            <tr style=" height: 70px; vertical-align: middle;">
-                                <td class="d-none d-md-table-cell">2</td>
-                                <td>
-                                    <div class="d-md-none small text-muted mb-1">#2</div>
-                                    Certificate Collection Clearance form
-                                </td>
-                                <td class="d-none d-lg-table-cell"></td>
-                                <td>
-                                    <a href="https://www.chuka.ac.ke/storage/2022/04/CLEARANCE-FORM-1.pdf" 
-                                       target="_blank" 
-                                       class="btn btn-view-doc btn-sm text-white">
-                                        <i class="bi bi-eye me-1 d-none d-sm-inline"></i>View Document
-                                    </a>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+            <!-- Important Documents Section -->
+            <div class="card mb-3 mb-md-5">
+                <div class="card-header"><h5 class="mb-0">Important Documents</h5></div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover mb-0">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th class="d-none d-md-table-cell" style="width: 5%;">#</th>
+                                    <th style="width: 50%;">File Name</th>
+                                    <th class="d-none d-lg-table-cell" style="width: 25%;">Remarks</th>
+                                    <th style="width: 10%;">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php if (empty($documents)): ?>
+                                    <tr>
+                                        <td colspan="4" class="text-center py-4">
+                                            <i class="bi bi-folder2-open fs-1 text-muted d-block mb-3"></i>
+                                            <span class="text-muted">No documents uploaded for you yet.</span>
+                                        </td>
+                                    </tr>
+                                <?php else: ?>
+                                    <?php foreach ($documents as $idx => $doc): ?>
+                                    <tr style=" height: 70px; vertical-align: middle;">
+                                        <td class="d-none d-md-table-cell"><?php echo $idx + 1; ?></td>
+                                        <td>
+                                            <div class="d-md-none small text-muted mb-1">#<?php echo $idx + 1; ?></div>
+                                            <?php echo htmlspecialchars($doc['document_name']); ?>
+                                            <small class="d-block text-muted d-md-none"><?php echo htmlspecialchars($doc['remarks']); ?></small>
+                                        </td>
+                                        <td class="d-none d-lg-table-cell"><?php echo htmlspecialchars($doc['remarks'] ?? '-'); ?></td>
+                                        <td>
+                                            <!-- Assuming file path is stored as 'uploads/documents/filename.ext' relative to root -->
+                                            <!-- Current path is students/welcome.php, so we need to go up one level -->
+                                            <a href="../<?php echo htmlspecialchars($doc['file_path']); ?>" 
+                                               target="_blank" 
+                                               class="btn btn-view-doc btn-sm text-white">
+                                                <i class="bi bi-eye me-1 d-none d-sm-inline"></i>View
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
-        </div>
     </div>
     
     <?php
@@ -175,3 +180,9 @@ if (empty($full_name)) {
 
 </body>
 </html>
+<?php 
+// Close connection at the very end
+if (isset($conn) && $conn instanceof mysqli) {
+    $conn->close();
+}
+?>

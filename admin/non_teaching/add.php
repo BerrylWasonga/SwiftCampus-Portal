@@ -17,7 +17,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $reg_no = trim($_POST['reg_no']); // Staff ID
     $password = $_POST['password'];
     $confirm_password = $_POST['confirm_password'];
-    $role = 'staff';
+    $role = 'non_teaching';
 
     if ($password !== $confirm_password) {
         $error = "Passwords do not match.";
@@ -36,7 +36,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $stmt->bind_param("ssssss", $first_name, $last_name, $email, $reg_no, $hashed_password, $role);
             
             if ($stmt->execute()) {
-                $success = "Staff added successfully.";
+                $success = "Non-Teaching staff added successfully.";
             } else {
                 $error = "Database Error: " . $conn->error;
             }
@@ -51,7 +51,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Staff - Admin</title>
+    <title>Add Non-Teaching Staff - Admin</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <link href="../assets/main.css" rel="stylesheet">
@@ -63,7 +63,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <main class="main-content" id="mainContent">
         <div class="container-fluid">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2>Add Teaching Staff</h2>
+                <h2>Add Non-Teaching Staff</h2>
                 <a href="manage.php" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-2"></i>Back to List</a>
             </div>
 
@@ -95,7 +95,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
                         <div class="mb-3">
                             <label class="form-label">Staff ID / Reg No</label>
-                            <input type="text" name="reg_no" class="form-control" placeholder="e.g. STF001" required>
+                            <input type="text" name="reg_no" class="form-control" placeholder="e.g. NTS001" required>
                         </div>
 
                         <div class="row mb-3">
@@ -110,7 +110,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         </div>
 
                         <div class="d-grid">
-                            <button type="submit" class="btn btn-primary">Create Staff Account</button>
+                            <button type="submit" class="btn btn-primary">Create Account</button>
                         </div>
                     </form>
                 </div>
