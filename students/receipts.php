@@ -31,7 +31,7 @@ $query = "SELECT fp.*, s.semester_name, ay.year_name
           JOIN semesters s ON fp.semester_id = s.id 
           JOIN academic_years ay ON s.academic_year_id = ay.id 
           WHERE fp.user_id = ? AND fp.amount_paid > 0
-          ORDER BY fp.payment_date DESC, s.start_date DESC";
+          ORDER BY fp.last_payment_date DESC, s.start_date DESC";
 
 $stmt = $conn->prepare($query);
 $stmt->bind_param("i", $_SESSION['user_id']);
@@ -95,8 +95,8 @@ $conn->close();
                                     </td>
                                     <td>
                                         <?php 
-                                            echo $receipt['payment_date'] 
-                                                ? date('d M Y', strtotime($receipt['payment_date'])) 
+                                            echo $receipt['last_payment_date'] 
+                                                ? date('d M Y', strtotime($receipt['last_payment_date'])) 
                                                 : '<span class="text-muted">N/A</span>'; 
                                         ?>
                                     </td>

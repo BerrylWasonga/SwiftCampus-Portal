@@ -40,13 +40,92 @@ if (empty($full_name)) {
             <div class="flex-grow-1"></div>
 
             <!-- Search Bar (hidden on md and below) -->
-            <form class="d-none d-lg-flex search-form me-3">
+            <form class="d-none d-lg-flex search-form me-3 position-relative">
                 <input class="form-control rounded-pill px-4" 
                        type="search" 
+                       id="studentSearchInput"
                        placeholder="Search..." 
                        aria-label="Search"
+                       autocomplete="off"
                        style="width: 280px; background-color: #495057; border: none; color: white;">
+                <div id="searchSuggestions" class="list-group position-absolute w-100 shadow" style="top: 100%; z-index: 1050; display: none;"></div>
             </form>
+
+            <style>
+                #searchSuggestions .list-group-item {
+                    background-color: #343a40;
+                    color: #fff;
+                    border-color: #495057;
+                    cursor: pointer;
+                }
+                #searchSuggestions .list-group-item:hover {
+                    background-color: #495057;
+                }
+                #searchSuggestions .small-text {
+                    font-size: 0.85rem;
+                    color: #adb5bd;
+                }
+            </style>
+
+            <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const searchInput = document.getElementById('studentSearchInput');
+                const suggestionsBox = document.getElementById('searchSuggestions');
+
+                if (searchInput) { // Ensure element exists
+                    searchInput.addEventListener('input', function() {
+                        const query = this.value.trim();
+
+                        if (query.length < 2) {
+                            suggestionsBox.style.display = 'none';
+                            suggestionsBox.innerHTML = '';
+                            return;
+                        }
+
+                        fetch('search_handler.php?query=' + encodeURIComponent(query))
+                            .then(response => response.json())
+                            .then(data => {
+                                suggestionsBox.innerHTML = '';
+                                if (data.length > 0) {
+                                    data.forEach(item => {
+                                        const suggestionItem = document.createElement('a');
+                                        suggestionItem.classList.add('list-group-item', 'list-group-item-action');
+                                        suggestionItem.href = '#'; // Or link to specific page if available
+                                        suggestionItem.innerHTML = `
+                                            <div class="d-flex w-100 justify-content-between">
+                                                <h6 class="mb-1 text-white">${item.title}</h6>
+                                                <small class="text-muted">${item.type}</small>
+                                            </div>
+                                            <p class="mb-1 small-text">${item.details}</p>
+                                        `;
+                                        suggestionItem.addEventListener('click', function(e) {
+                                            e.preventDefault();
+                                            searchInput.value = item.title;
+                                            suggestionsBox.style.display = 'none';
+                                            // Optional: Redirect or perform action
+                                            // window.location.href = 'view_course.php?code=' + item.details;
+                                            alert('You selected: ' + item.title + ' (' + item.type + ')');
+                                        });
+                                        suggestionsBox.appendChild(suggestionItem);
+                                    });
+                                    suggestionsBox.style.display = 'block';
+                                } else {
+                                    suggestionsBox.innerHTML = '<div class="list-group-item">No results found</div>';
+                                    suggestionsBox.style.display = 'block';
+                                }
+                            })
+                            .catch(error => console.error('Error fetching search results:', error));
+                    });
+
+                    // Hide suggestions when clicking outside
+                    document.addEventListener('click', function(e) {
+                        if (!searchInput.contains(e.target) && !suggestionsBox.contains(e.target)) {
+                            suggestionsBox.style.display = 'none';
+                        }
+                    });
+                }
+            });
+            </script>
 
             <!-- User Avatar (mobile: just avatar) -->
             <div class="d-lg-none">

@@ -61,6 +61,7 @@ $conn->close();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Portal Login</title>
+    <link rel="icon" href="students/Assets/images/favicon.png?v=2" type="image/png">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
@@ -197,7 +198,7 @@ $conn->close();
         <button type="submit" class="btn btn-login btn-lg w-100">Log In</button>
 
         <div class="mt-4">
-            <a href="#" class="text-cyan text-decoration-none">Forgot your password?</a>
+            <a href="password_reset.php" class="text-cyan text-decoration-none">Forgot your password?</a>
         </div>
     
         <div class="separator2"></div>
