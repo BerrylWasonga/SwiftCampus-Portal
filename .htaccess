@@ -1,0 +1,12 @@
+# 1. Disable the file listing (Index)
+Options -Indexes
+
+# 2. Prevent access to sensitive file extensions
+<FilesMatch "\.(config|env|ini|log|db|sql)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# 3. Optional: Redirect folder access to a specific page
+# Instead of a 403 error, this sends them to your login or home page
+# ErrorDocument 403 /mini-auth-project/students/welcome.php
