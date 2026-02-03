@@ -1,3 +1,10 @@
+#
+RewriteEngine On
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.+)$ $1.php [L]
+
 # 1. Disable the file listing (Index)
 Options -Indexes
 

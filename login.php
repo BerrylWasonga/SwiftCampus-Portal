@@ -198,7 +198,7 @@ $conn->close();
         <button type="submit" class="btn btn-login btn-lg w-100">Log In</button>
 
         <div class="mt-4">
-            <a href="password_reset.php" class="text-cyan text-decoration-none">Forgot your password?</a>
+            <a href="forgot_password.php" class="text-cyan text-decoration-none">Forgot your password?</a>
         </div>
     
         <div class="separator2"></div>

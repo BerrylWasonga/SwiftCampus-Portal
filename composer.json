@@ -1,0 +1,7 @@
+{
+    "name": "berrylwasonga/mini-auth-project",
+    "description": "Mini Auth Project",
+    "require": {
+        "phpmailer/phpmailer": "^6.9"
+    }
+}
