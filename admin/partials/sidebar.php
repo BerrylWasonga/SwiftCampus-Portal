@@ -75,6 +75,11 @@
                                     <i class="bi bi-file-earmark-text"></i> Transcripts
                                 </a>
                             </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/mini-auth-project/admin/academics/requisitions.php">
+                                    <i class="bi bi-card-checklist"></i> Requisitions
+                                </a>
+                            </li>
                         </ul>
                     </div>
                 </li>

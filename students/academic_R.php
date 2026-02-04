@@ -20,20 +20,34 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') { header("Loca
         <h2 class="mb-4">Academic Requisition</h2>
         <div class="card shadow-sm">
             <div class="card-body">
-                <form>
+                <?php if (isset($_SESSION['success'])): ?>
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <?php echo $_SESSION['success']; unset($_SESSION['success']); ?>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                <?php endif; ?>
+                
+                <?php if (isset($_SESSION['error'])): ?>
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <?php echo $_SESSION['error']; unset($_SESSION['error']); ?>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                <?php endif; ?>
+
+                <form action="process_request.php" method="POST">
                     <div class="mb-3">
                         <label class="form-label">Request Type</label>
-                        <select class="form-select">
-                            <option>Academic Leave</option>
-                            <option>Deferment</option>
-                            <option>Remarking</option>
+                        <select class="form-select" name="request_type" required>
+                            <option value="Academic Leave">Academic Leave</option>
+                            <option value="Deferment">Deferment</option>
+                            <option value="Remarking">Remarking</option>
                         </select>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Reason</label>
-                        <textarea class="form-control" rows="4"></textarea>
+                        <textarea class="form-control" name="reason" rows="4" required placeholder="State your reason..."></textarea>
                     </div>
-                    <button type="button" class="btn btn-primary" onclick="alert('Request submitted successfully!')">Submit Request</button>
+                    <button type="submit" class="btn btn-primary">Submit Request</button>
                 </form>
             </div>
         </div>

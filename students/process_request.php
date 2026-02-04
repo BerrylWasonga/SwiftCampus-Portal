@@ -1,0 +1,56 @@
+<?php
+session_start();
+include("../config.php");
+
+// Check if user is logged in
+if (!isset($_SESSION["user_id"])) {
+    header("Location: ../login.php");
+    exit();
+}
+
+// Check for POST request
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $student_id = $_SESSION["user_id"];
+    
+    // Validate inputs
+    if (isset($_POST["request_type"]) && isset($_POST["reason"])) {
+        $request_type = trim($_POST["request_type"]);
+        $reason = trim($_POST["reason"]);
+
+        // Check for empty fields
+        if (empty($request_type) || empty($reason)) {
+            $_SESSION['error'] = "All fields are required.";
+            header("Location: academic_R.php");
+            exit();
+        }
+
+        // Sanitize input (Basic sanitization, though prepared statements handle SQL injection)
+        $request_type = htmlspecialchars($request_type);
+        $reason = htmlspecialchars($reason);
+
+        // Database Insertion using Prepared Statement
+        $sql = "INSERT INTO requisitions (student_id, request_type, reason, status) VALUES (?, ?, ?, 'Pending')";
+        
+        if ($stmt = $conn->prepare($sql)) {
+            $stmt->bind_param("iss", $student_id, $request_type, $reason);
+            
+            if ($stmt->execute()) {
+                $_SESSION['success'] = "Requisition submitted successfully.";
+            } else {
+                $_SESSION['error'] = "Error submitting request: " . $stmt->error;
+            }
+            $stmt->close();
+        } else {
+            $_SESSION['error'] = "Database error: " . $conn->error;
+        }
+    } else {
+        $_SESSION['error'] = "Invalid form submission.";
+    }
+} else {
+    $_SESSION['error'] = "Invalid request method.";
+}
+
+$conn->close();
+header("Location: academic_R.php");
+exit();
+?>
