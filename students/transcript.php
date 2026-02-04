@@ -92,8 +92,8 @@ $conn->close();
         <div class="card shadow-sm p-4 p-md-5">
             <!-- Header -->
             <div class="transcript-header text-center">
-                <img src="Assets/images/logo.png" alt="Logo" style="height: 80px;" class="mb-3">
-                <h2 class="text-uppercase fw-bold mb-1">Chuka University</h2>
+                <img src="Assets/images/29.png" alt="Logo" style="height: 80px;" class="mb-3">
+                <h2 class="text-uppercase fw-bold mb-1">Otieno Academy</h2>
                 <h4 class="text-uppercase mb-3">Academic Transcript (Provisional)</h4>
             </div>
 

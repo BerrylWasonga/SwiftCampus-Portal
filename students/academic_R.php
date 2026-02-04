@@ -38,6 +38,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') { header("Loca
                     <div class="mb-3">
                         <label class="form-label">Request Type</label>
                         <select class="form-select" name="request_type" required>
+                            <option value="Request Type">Request Type</option>
                             <option value="Academic Leave">Academic Leave</option>
                             <option value="Deferment">Deferment</option>
                             <option value="Remarking">Remarking</option>
