@@ -63,7 +63,7 @@ $users = $conn->query("SELECT id, first_name, last_name, email, reg_no, programm
                                     <th>Name</th>
                                     <th>Reg No</th>
                                     <th>Email</th>
-                                    <th>Programme</th>
+                                    <th>Course</th>
                                     <th>Status</th>
                                     <th>Actions</th>
                                 </tr>

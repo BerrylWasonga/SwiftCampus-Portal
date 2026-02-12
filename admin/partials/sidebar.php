@@ -22,8 +22,13 @@
                     <div class="collapse" id="studentSubmenu">
                         <ul class="nav flex-column ms-3">
                             <li class="nav-item">
+                                <a class="nav-link" href="/mini-auth-project/admin/student/dashboard.php">
+                                    <i class="bi bi-diagram-3"></i> Student Directory
+                                </a>
+                            </li>
+                            <li class="nav-item">
                                 <a class="nav-link" href="/mini-auth-project/admin/student/list.php">
-                                    <i class="bi bi-list-ul"></i> Students List
+                                    <i class="bi bi-list-ul"></i> All Students
                                 </a>
                             </li>
                             <li class="nav-item">

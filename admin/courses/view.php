@@ -90,7 +90,6 @@ $semesters = $conn->query("SELECT id, semester_name FROM semesters ORDER BY id D
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a href="../faculties/manage.php">Faculties</a></li>
                     <li class="breadcrumb-item"><a href="../faculties/view.php?id=<?php echo $course['faculty_id']; ?>"><?php echo htmlspecialchars($course['faculty_name']); ?></a></li>
-                    <li class="breadcrumb-item"><a href="../programs/view.php?id=<?php echo $course['program_id']; ?>"><?php echo htmlspecialchars($course['program_name']); ?></a></li>
                     <li class="breadcrumb-item active"><?php echo htmlspecialchars($course['course_name']); ?></li>
                 </ol>
             </nav>

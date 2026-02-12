@@ -2,27 +2,26 @@
 require_once 'Model.php';
 
 class Course extends Model {
-    public function getByProgram($program_id) {
-        $stmt = $this->conn->prepare("SELECT * FROM courses WHERE program_id = ? ORDER BY course_name ASC");
-        $stmt->bind_param("i", $program_id);
+    public function getByFaculty($faculty_id) {
+        $stmt = $this->conn->prepare("SELECT * FROM courses WHERE faculty_id = ? ORDER BY course_name ASC");
+        $stmt->bind_param("i", $faculty_id);
         $stmt->execute();
         return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     }
 
     public function getById($id) {
-        $stmt = $this->conn->prepare("SELECT c.*, p.program_name, f.faculty_name, f.id as faculty_id 
+        $stmt = $this->conn->prepare("SELECT c.*, f.faculty_name, f.id as faculty_id 
                                      FROM courses c 
-                                     JOIN programs p ON c.program_id = p.id 
-                                     JOIN faculties f ON p.faculty_id = f.id 
+                                     JOIN faculties f ON c.faculty_id = f.id 
                                      WHERE c.id = ?");
         $stmt->bind_param("i", $id);
         $stmt->execute();
         return $stmt->get_result()->fetch_assoc();
     }
 
-    public function create($program_id, $name, $code, $level) {
-        $stmt = $this->conn->prepare("INSERT INTO courses (program_id, course_name, course_code, level) VALUES (?, ?, ?, ?)");
-        $stmt->bind_param("isss", $program_id, $name, $code, $level);
+    public function create($faculty_id, $name, $code, $level) {
+        $stmt = $this->conn->prepare("INSERT INTO courses (faculty_id, course_name, course_code, level) VALUES (?, ?, ?, ?)");
+        $stmt->bind_param("isss", $faculty_id, $name, $code, $level);
         if ($stmt->execute()) {
             $course_id = $this->conn->insert_id;
             $this->addDefaultYearLevels($course_id);

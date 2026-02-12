@@ -63,6 +63,25 @@ function isRegistrationOpen($conn, $semester_id, $registration_type) {
 }
 
 /**
+ * Get all open registration windows for a semester
+ */
+function getOpenRegistrationWindows($conn, $semester_id) {
+    $stmt = $conn->prepare("
+        SELECT registration_type, start_datetime, end_datetime, status
+        FROM registration_windows 
+        WHERE semester_id = ? 
+        AND status = 'open'
+        AND NOW() BETWEEN start_datetime AND end_datetime
+    ");
+    $stmt->bind_param("i", $semester_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $windows = $result->fetch_all(MYSQLI_ASSOC);
+    $stmt->close();
+    return $windows;
+}
+
+/**
  * Get registration window details
  */
 function getRegistrationWindow($conn, $semester_id, $registration_type) {
@@ -200,9 +219,6 @@ function getAvailableUnits($conn, $user_id, $semester_id, $registration_type) {
                 FALSE as already_registered
             FROM course_units cu
             JOIN requisitions r ON cu.id = r.unit_id
-            WHERE r.student_id = ? 
-            AND r.request_type = 'Special Exam'
-            AND r.status = 'Approved'
             AND cu.id NOT IN (
                 SELECT unit_id FROM course_registrations 
                 WHERE user_id = ? AND semester_id = ? AND registration_status NOT IN ('rejected', 'cancelled')

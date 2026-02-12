@@ -85,7 +85,7 @@ $doc_stmt->close();
                     </div>
                     <div class="col-12 col-sm-6 col-lg-4">
                         <strong class="d-block text-muted small">Campus</strong>
-                        <span><?php echo htmlspecialchars($user['campus'] ?? 'MAIN'); ?></span><!-- ?? (Null Coalescing) -->w
+                        <span><?php echo htmlspecialchars($user['campus'] ?? 'MAIN'); ?></span>
                     </div>
                     <div class="col-12">
                         <strong class="d-block text-muted small">Address</strong>

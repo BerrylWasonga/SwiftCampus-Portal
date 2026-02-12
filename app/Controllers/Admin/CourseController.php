@@ -22,7 +22,7 @@ class CourseController extends Controller {
     }
 
     public function store($data) {
-        return $this->courseModel->create($data['program_id'], $data['course_name'], $data['course_code'], $data['level']);
+        return $this->courseModel->create($data['faculty_id'], $data['course_name'], $data['course_code'], $data['level']);
     }
 
     public function update($id, $data) {

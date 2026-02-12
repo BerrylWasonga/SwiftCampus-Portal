@@ -92,7 +92,7 @@ $users = $conn->query("SELECT id, first_name, last_name, email FROM users WHERE 
 
             <ul class="nav nav-tabs mb-4" id="facultyTabs" role="tablist">
                 <li class="nav-item">
-                    <button class="nav-link active" id="programs-tab" data-bs-toggle="tab" data-bs-target="#programs" type="button">Programs</button>
+                    <button class="nav-link active" id="courses-tab" data-bs-toggle="tab" data-bs-target="#courses" type="button">Courses</button>
                 </li>
                 <li class="nav-item">
                     <button class="nav-link" id="staff-tab" data-bs-toggle="tab" data-bs-target="#staff" type="button">Faculty Members</button>
@@ -100,25 +100,25 @@ $users = $conn->query("SELECT id, first_name, last_name, email FROM users WHERE 
             </ul>
 
             <div class="tab-content" id="facultyTabsContent">
-                <!-- Programs Tab -->
-                <div class="tab-pane fade show active" id="programs" role="tabpanel">
+                <!-- Courses Tab -->
+                <div class="tab-pane fade show active" id="courses" role="tabpanel">
                     <div class="row">
                         <div class="col-lg-4">
                             <div class="card shadow-sm">
-                                <div class="card-header bg-primary text-white">Add Program</div>
+                                <div class="card-header bg-primary text-white">Add Course</div>
                                 <div class="card-body">
                                     <form method="post">
                                         <input type="hidden" name="add_program" value="1">
-                                        <div class="mb-3"><label class="form-label">Program Name</label><input type="text" name="program_name" class="form-control" placeholder="e.g. Computing Science" required></div>
-                                        <div class="mb-3"><label class="form-label">Program Code</label><input type="text" name="program_code" class="form-control" placeholder="e.g. CS-01" required></div>
-                                        <button class="btn btn-primary w-100">Add Program</button>
+                                        <div class="mb-3"><label class="form-label">Course Name</label><input type="text" name="program_name" class="form-control" placeholder="e.g. Computing Science" required></div>
+                                        <div class="mb-3"><label class="form-label">Course Code</label><input type="text" name="program_code" class="form-control" placeholder="e.g. CS-01" required></div>
+                                        <button class="btn btn-primary w-100">Add Course</button>
                                     </form>
                                 </div>
                             </div>
                         </div>
                         <div class="col-lg-8">
                             <div class="card shadow-sm">
-                                <div class="card-header bg-light">Existing Programs</div>
+                                <div class="card-header bg-light">Existing Courses</div>
                                 <div class="card-body p-0">
                                     <table class="table table-hover mb-0">
                                         <thead class="table-light"><tr><th>Code</th><th>Name</th><th>Action</th></tr></thead>
@@ -128,13 +128,13 @@ $users = $conn->query("SELECT id, first_name, last_name, email FROM users WHERE 
                                                 <td><?php echo htmlspecialchars($p['program_code']); ?></td>
                                                 <td><?php echo htmlspecialchars($p['program_name']); ?></td>
                                                 <td>
-                                                    <a href="../programs/view.php?id=<?php echo $p['id']; ?>" class="btn btn-sm btn-outline-info"><i class="bi bi-eye"></i> View</a>
+                                                    <a href="../courses/view.php?id=<?php echo $p['id']; ?>" class="btn btn-sm btn-outline-info"><i class="bi bi-eye"></i> View</a>
                                                     <button class="btn btn-sm btn-outline-primary edit-program-btn" 
-                                                        data-bs-toggle="modal" data-bs-target="#editProgramModal"
+                                                        data-bs-toggle="modal" data-bs-target="#editCourseModal"
                                                         data-id="<?php echo $p['id']; ?>"
                                                         data-name="<?php echo htmlspecialchars($p['program_name']); ?>"
                                                         data-code="<?php echo htmlspecialchars($p['program_code']); ?>"><i class="bi bi-pencil"></i></button>
-                                                    <form method="post" class="d-inline" onsubmit="return confirm('Delete Program? All associated courses and units will be removed.');">
+                                                    <form method="post" class="d-inline" onsubmit="return confirm('Delete Course? All associated units will be removed.');">
                                                         <input type="hidden" name="delete_program" value="1">
                                                         <input type="hidden" name="program_id" value="<?php echo $p['id']; ?>">
                                                         <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
@@ -214,17 +214,17 @@ $users = $conn->query("SELECT id, first_name, last_name, email FROM users WHERE 
         </div>
     </main>
 
-    <!-- Edit Program Modal -->
-    <div class="modal fade" id="editProgramModal" tabindex="-1">
+    <!-- Edit Course Modal -->
+    <div class="modal fade" id="editCourseModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
                 <form method="post">
-                    <div class="modal-header"><h5 class="modal-title">Edit Program</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                    <div class="modal-header"><h5 class="modal-title">Edit Course</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
                     <div class="modal-body">
                         <input type="hidden" name="update_program" value="1">
                         <input type="hidden" name="program_id" id="edit_program_id">
-                        <div class="mb-3"><label class="form-label">Program Name</label><input type="text" name="program_name" id="edit_program_name" class="form-control" required></div>
-                        <div class="mb-3"><label class="form-label">Program Code</label><input type="text" name="program_code" id="edit_program_code" class="form-control" required></div>
+                        <div class="mb-3"><label class="form-label">Course Name</label><input type="text" name="program_name" id="edit_program_name" class="form-control" required></div>
+                        <div class="mb-3"><label class="form-label">Course Code</label><input type="text" name="program_code" id="edit_program_code" class="form-control" required></div>
                     </div>
                     <div class="modal-footer"><button type="submit" class="btn btn-primary">Save Changes</button></div>
                 </form>

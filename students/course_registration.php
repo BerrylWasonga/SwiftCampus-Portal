@@ -37,6 +37,7 @@ $student_info = getStudentAcademicInfo($conn, $_SESSION['user_id']);
 $registered_units = [];
 if ($current_semester) {
     $registered_units = getRegisteredUnits($conn, $_SESSION['user_id'], $current_semester['id']);
+    $reg_windows = getOpenRegistrationWindows($conn, $current_semester['id']);
 }
 
 $conn->close();
@@ -179,7 +180,7 @@ $conn->close();
                     <div class="card stat-card border-start border-info border-4">
                         <div class="card-body">
                             <h6 class="text-muted mb-1">Year of Study</h6>
-                            <h5 class="mb-0">Year <?php echo $student_info['current_year_of_study'] ?? 1; ?></h5>
+                            <h5 class="mb-0">Year <?php echo htmlspecialchars($user['year_level'] ?? ($student_info['current_year_of_study'] ?? 'N/A')); ?></h5>
                         </div>
                     </div>
                 </div>
@@ -201,9 +202,15 @@ $conn->close();
                                     </label>
                                     <select class="form-select" id="registrationType">
                                         <option value="">-- Select Registration Type --</option>
-                                        <option value="regular">Regular Registration</option>
-                                        <option value="supplementary">Supplementary Registration</option>
-                                        <option value="special">Special/Repeat Registration</option>
+                                        <?php if (!empty($reg_windows)): ?>
+                                            <?php foreach ($reg_windows as $window): ?>
+                                                <option value="<?php echo htmlspecialchars($window['registration_type']); ?>">
+                                                    <?php echo ucfirst($window['registration_type']); ?> Registration
+                                                </option>
+                                            <?php endforeach; ?>
+                                        <?php else: ?>
+                                            <option value="" disabled>No registration periods currently open</option>
+                                        <?php endif; ?>
                                     </select>
                                     <small class="text-muted">Select your registration type to view available units</small>
                                 </div>
@@ -614,9 +621,12 @@ $conn->close();
         if (semesterId) {
             loadBasket();
             
-            // Auto-load regular units on page load
-            $('#registrationType').val('regular');
-            $('#getUnitsBtn').prop('disabled', false).trigger('click');
+            // Auto-load first available registration type if any
+            const firstRegType = $('#registrationType option:not([value=""]):not([disabled])').first().val();
+            if (firstRegType) {
+                $('#registrationType').val(firstRegType);
+                $('#getUnitsBtn').prop('disabled', false).trigger('click');
+            }
         }
     });
     </script>

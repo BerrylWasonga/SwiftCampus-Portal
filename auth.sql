@@ -4,6 +4,31 @@
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
 SET time_zone = "+00:00";
+SET FOREIGN_KEY_CHECKS = 0;
+
+-- --------------------------------------------------------
+-- Drop existing tables
+-- --------------------------------------------------------
+DROP TABLE IF EXISTS `academic_years`;
+DROP TABLE IF EXISTS `faculties`;
+DROP TABLE IF EXISTS `programs`;
+DROP TABLE IF EXISTS `courses`;
+DROP TABLE IF EXISTS `course_year_levels`;
+DROP TABLE IF EXISTS `course_units`;
+DROP TABLE IF EXISTS `semesters`;
+DROP TABLE IF EXISTS `course_unit_assignments`;
+DROP TABLE IF EXISTS `users`;
+DROP TABLE IF EXISTS `faculty_staff`;
+DROP TABLE IF EXISTS `unit_lecturer_assignments`;
+DROP TABLE IF EXISTS `course_registrations`;
+DROP TABLE IF EXISTS `grades`;
+DROP TABLE IF EXISTS `fee_payments`;
+DROP TABLE IF EXISTS `password_resets`;
+DROP TABLE IF EXISTS `registration_basket`;
+DROP TABLE IF EXISTS `registration_windows`;
+DROP TABLE IF EXISTS `requisitions`;
+DROP TABLE IF EXISTS `student_academic_info`;
+DROP TABLE IF EXISTS `student_documents`;
 
 -- --------------------------------------------------------
 -- Table structure for table `academic_years`
@@ -31,32 +56,18 @@ CREATE TABLE `faculties` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
--- Table structure for table `programs`
--- --------------------------------------------------------
-CREATE TABLE `programs` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `faculty_id` int(11) NOT NULL,
-  `program_name` varchar(150) NOT NULL,
-  `program_code` varchar(20) NOT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `program_code` (`program_code`),
-  CONSTRAINT `programs_ibfk_1` FOREIGN KEY (`faculty_id`) REFERENCES `faculties` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
 -- Table structure for table `courses`
 -- --------------------------------------------------------
 CREATE TABLE `courses` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `program_id` int(11) NOT NULL,
+  `faculty_id` int(11) NOT NULL,
   `course_name` varchar(150) NOT NULL,
   `course_code` varchar(20) NOT NULL,
   `level` enum('Certificate','Diploma','Bachelor','Masters','PhD') NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
   UNIQUE KEY `course_code` (`course_code`),
-  CONSTRAINT `courses_ibfk_program` FOREIGN KEY (`program_id`) REFERENCES `programs` (`id`) ON DELETE CASCADE
+  CONSTRAINT `courses_ibfk_faculty` FOREIGN KEY (`faculty_id`) REFERENCES `faculties` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -141,12 +152,16 @@ CREATE TABLE `users` (
   `campus` varchar(50) DEFAULT 'MAIN',
   `programme` varchar(150) DEFAULT NULL,
   `course_id` int(11) DEFAULT NULL,
+  `faculty_id` int(11) DEFAULT NULL,
+  `year_level` int(11) DEFAULT NULL,
+  `admission_year` int(11) DEFAULT NULL,
   `attempted_units` int(11) DEFAULT 0,
   `registered_units` int(11) DEFAULT 0,
   PRIMARY KEY (`id`),
   UNIQUE KEY `email` (`email`),
   UNIQUE KEY `reg_no` (`reg_no`),
-  CONSTRAINT `users_ibfk_1` FOREIGN KEY (`course_id`) REFERENCES `courses` (`id`) ON DELETE SET NULL
+  CONSTRAINT `users_ibfk_1` FOREIGN KEY (`course_id`) REFERENCES `courses` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `users_ibfk_faculty` FOREIGN KEY (`faculty_id`) REFERENCES `faculties` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -341,18 +356,15 @@ INSERT INTO `faculties` (`id`, `faculty_name`, `faculty_code`, `created_at`) VAL
 (1, 'Faculty of Science and Engineering and Technology', 'FSET', '2025-01-20 05:00:00'),
 (2, 'Faculty of Business and Law', 'FBL', '2025-01-20 05:00:00');
 
-INSERT INTO `programs` (`id`, `faculty_id`, `program_name`, `program_code`, `created_at`) VALUES
-(1, 1, 'General Faculty of Science and Engineering and Technology', 'GEN-FSET', CURRENT_TIMESTAMP),
-(2, 2, 'General Faculty of Business and Law', 'GEN-FBL', CURRENT_TIMESTAMP);
-
-INSERT INTO `courses` (`id`, `program_id`, `course_name`, `course_code`, `level`, `created_at`) VALUES
+INSERT INTO `courses` (`id`, `faculty_id`, `course_name`, `course_code`, `level`, `created_at`) VALUES
 (1, 1, 'Bachelor of Science (Computer Science)', 'EB1', 'Bachelor', '2025-01-20 05:00:00'),
 (2, 1, 'Bachelor of Science (Applied Computer Science)', 'EB2', 'Bachelor', '2025-01-20 05:00:00'),
 (3, 2, 'Bachelor of Commerce', 'DB1', 'Bachelor', '2025-01-20 05:00:00');
 
-INSERT INTO `users` (`id`, `first_name`, `last_name`, `email`, `reg_no`, `password`, `role`, `status`, `last_login`, `created_at`, `gender`, `dob`, `address`, `campus`, `programme`, `course_id`) VALUES
-(1, 'Prudence', 'Wasonga', 'prudencenereah@gmail.com', 'EB1/56145/21', '$2y$10$E7WUw3/UTK6gLXtsKykbZ.TIJgUWFNAys9Xgz.OCBXM93SFc2me6W', 'user', 'active', '2026-01-26 11:00:26', '2025-10-04 02:57:20', 'Female', '2003-04-03', '90 - 40600', 'MAIN', 'Bachelor of Science (Computer Science)', 1),
-(2, 'Admin', 'User', 'admin@berrywasonga.com', 'ADMIN001', '$2y$10$bdGgPTEYQ1VmcDw1Sck.lurur9DUjz2TdOhx3PE6CAtsjA.3gZVbG', 'admin', 'active', '2026-01-25 01:16:31', '2025-10-04 02:57:20', 'Female', NULL, NULL, 'MAIN', NULL, NULL),
-(10, 'Beryl', 'Wasonga', 'berrylwasonga@gmail.com', 'EB1/56146/21', '$2y$10$ozwmDLv8vPDCdutMaeSirefuNeFQ5zF9QTIVBFDqkh1LCua3828Du', 'user', 'active', NULL, '2025-12-19 04:54:58', 'Female', '2003-04-03', '90 - 40600', 'MAIN', 'Bachelor of Science (Computer Science)', 1);
+INSERT INTO `users` (`id`, `first_name`, `last_name`, `email`, `reg_no`, `password`, `role`, `status`, `last_login`, `created_at`, `gender`, `dob`, `address`, `campus`, `programme`, `course_id`, `faculty_id`, `year_level`, `admission_year`) VALUES
+(1, 'Prudence', 'Wasonga', 'prudencenereah@gmail.com', 'EB1/56145/21', '$2y$10$E7WUw3/UTK6gLXtsKykbZ.TIJgUWFNAys9Xgz.OCBXM93SFc2me6W', 'user', 'active', '2026-01-26 11:00:26', '2025-10-04 02:57:20', 'Female', '2003-04-03', '90 - 40600', 'MAIN', 'Bachelor of Science (Computer Science)', 1, 1, 4, 2021),
+(2, 'Admin', 'User', 'admin@berrywasonga.com', 'ADMIN001', '$2y$10$bdGgPTEYQ1VmcDw1Sck.lurur9DUjz2TdOhx3PE6CAtsjA.3gZVbG', 'admin', 'active', '2026-01-25 01:16:31', '2025-10-04 02:57:20', 'Female', NULL, NULL, 'MAIN', NULL, NULL, NULL, NULL, NULL),
+(10, 'Beryl', 'Wasonga', 'berrylwasonga@gmail.com', 'EB1/56146/21', '$2y$10$ozwmDLv8vPDCdutMaeSirefuNeFQ5zF9QTIVBFDqkh1LCua3828Du', 'user', 'active', NULL, '2025-12-19 04:54:58', 'Female', '2003-04-03', '90 - 40600', 'MAIN', 'Bachelor of Science (Computer Science)', 1, 1, 4, 2021);
 
+SET FOREIGN_KEY_CHECKS = 1;
 COMMIT;
