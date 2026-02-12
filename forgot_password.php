@@ -46,15 +46,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 try {
                     // Server settings
                     $mail->isSMTP();
-                    $mail->Host       = SMTP_HOST;
+                    $mail->Host       = 'smtp.gmail.com';
                     $mail->SMTPAuth   = true;
-                    $mail->Username   = SMTP_USER;
-                    $mail->Password   = SMTP_PASS;
+                    $mail->Username   = 'samson2020odhiambo@gmail.com';
+                    $mail->Password   = '37890362';
                     $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-                    $mail->Port       = SMTP_PORT;
+                    $mail->Port       = '587';
 
                     // Recipients
-                    $mail->setFrom(SMTP_FROM, SMTP_FROM_NAME);
+                    $mail->setFrom('samson2020odhiambo@gmail.com', 'Prudence Wasonga');
                     $mail->addAddress($email, $first_name);
 
                     // Content

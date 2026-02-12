@@ -19,7 +19,40 @@ require_once 'registration_functions.php';
 $action = $_POST['action'] ?? $_GET['action'] ?? '';
 $user_id = $_SESSION['user_id'];
 
-try {
+
+class RegistrationController {
+    private $db;
+
+    public function __construct($dbConnection) {
+        $this->db = $dbConnection;
+    }
+
+    /**
+     * Corresponds to your 'get_units' case
+     * Route: GET /api/registration/units
+     */
+    public function getUnits($userId, $semesterId, $type = 'regular') {
+        // 1. Validation Logic
+        if (!isRegistrationOpen($this->db, $semesterId, $type)) {
+            return [
+                'success' => false, 
+                'message' => 'Registration window is closed.'
+            ];
+        }
+
+        // 2. Fetch Data
+        $units = getAvailableUnits($this->db, $userId, $semesterId, $type);
+
+        // 3. Return structured data
+        return [
+            'success' => true,
+            'units' => $units,
+            'count' => count($units)
+        ];
+    }
+}
+
+/*try {
     switch ($action) {
         case 'get_units':
             $semester_id = (int)$_POST['semester_id'];
@@ -53,7 +86,7 @@ try {
                 ]);
                 break;
             }
-            */
+            
             
             $units = getAvailableUnits($conn, $user_id, $semester_id, $registration_type);
             
@@ -139,7 +172,7 @@ try {
         'success' => false,
         'message' => 'An error occurred: ' . $e->getMessage()
     ]);
-}
+} */
 
 $conn->close();
 ?>

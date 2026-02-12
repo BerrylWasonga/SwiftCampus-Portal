@@ -232,6 +232,19 @@ INSERT INTO `registration_windows` (`id`, `semester_id`, `registration_type`, `s
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `requisitions`
+--
+
+CREATE TABLE requisitions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id INT NOT NULL,
+    request_type VARCHAR(100) NOT NULL,
+    reason TEXT NOT NULL,
+    status ENUM('Pending','Approved','Rejected') DEFAULT 'Pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+--
 -- Table structure for table `semesters`
 --
 
@@ -334,7 +347,7 @@ CREATE TABLE `users` (
 INSERT INTO `users` (`id`, `first_name`, `last_name`, `email`, `reg_no`, `password`, `role`, `status`, `last_login`, `created_at`, `gender`, `dob`, `address`, `campus`, `programme`, `course_id`, `attempted_units`, `registered_units`) VALUES
 (1, 'Prudence', 'Wasonga', 'prudencenereah@gmail.com', 'EB1/56145/21', '$2y$10$E7WUw3/UTK6gLXtsKykbZ.TIJgUWFNAys9Xgz.OCBXM93SFc2me6W', 'user', 'active', '2026-01-26 11:00:26', '2025-10-04 02:57:20', 'Female', '2003-04-03', '90 - 40600', 'MAIN', 'Bachelor of Science (Computer Science)', 1, 58, 0),
 (2, 'Admin', 'User', 'admin@berrywasonga.com', 'ADMIN001', '$2y$10$bdGgPTEYQ1VmcDw1Sck.lurur9DUjz2TdOhx3PE6CAtsjA.3gZVbG', 'admin', 'active', '2026-01-25 01:16:31', '2025-10-04 02:57:20', 'Female', NULL, NULL, 'MAIN', NULL, NULL, 0, 0),
-(10, 'Beryl', 'Wasonga', 'berrylwasonga@gmail.com', 'EB1/56146/21', '$2y$10$ozwmDLv8vPDCdutMaeSirefuNeFQ5zF9QTIVBFDqkh1LCua3828Du', 'user', 'active', NULL, '2025-12-19 04:54:58', 'Female', '2003-04-03', '90 - 40600', 'MAIN', 'Bachelor of Science (Computer Science)', 1, 58, 0);
+(10, 'Beryl', 'Wasonga', 'berrylwasonga@gmail.com', 'EB1/56146/21', '$2y$10$ozwmDLv8vPDCdutMaeSirefuNeFQ5zF9QTIVBFDqkh1LCua3828Du', 'user', 'active', NULL, '2025-12-19 04:54:58', 'Female', '2003-04-03', '90 - 40600', 'MAIN', 'Bachelor of Science (Computer Science)', 1, 2, 0);
 
 -- --------------------------------------------------------
 

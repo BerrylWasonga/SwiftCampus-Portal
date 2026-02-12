@@ -81,11 +81,11 @@ $doc_stmt->close();
                     </div>
                     <div class="col-12 col-sm-6 col-lg-4">
                         <strong class="d-block text-muted small">Date of Birth</strong>
-                        <span><?php echo $user['dob'] ? date('d/m/Y', strtotime($user['dob'])) : 'N/A'; ?></span>
+                        <span><?php echo $user['dob'] ? date('d/m/Y', strtotime($user['dob'])) : 'N/A'; ?></span><!--? : (Ternary) If/Else -->
                     </div>
                     <div class="col-12 col-sm-6 col-lg-4">
                         <strong class="d-block text-muted small">Campus</strong>
-                        <span><?php echo htmlspecialchars($user['campus'] ?? 'MAIN'); ?></span>
+                        <span><?php echo htmlspecialchars($user['campus'] ?? 'MAIN'); ?></span><!-- ?? (Null Coalescing) -->w
                     </div>
                     <div class="col-12">
                         <strong class="d-block text-muted small">Address</strong>
