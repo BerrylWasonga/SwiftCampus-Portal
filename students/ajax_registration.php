@@ -52,12 +52,17 @@ class RegistrationController {
     }
 }
 
-/*try {
+try {
     switch ($action) {
         case 'get_units':
-            $semester_id = (int)$_POST['semester_id'];
+            $semester_id = (int)($_POST['semester_id'] ?? 0);
             $registration_type = $_POST['registration_type'] ?? 'regular';
             
+            if (!$semester_id) {
+                echo json_encode(['success' => false, 'message' => 'Semester ID is required']);
+                break;
+            }
+
             // Check if registration is open
             if (!isRegistrationOpen($conn, $semester_id, $registration_type)) {
                 $window = getRegistrationWindow($conn, $semester_id, $registration_type);
@@ -76,18 +81,6 @@ class RegistrationController {
                 break;
             }
             
-            // Optional: Check fee payment (uncomment to enforce)
-            /*
-            $fee_status = checkFeePaymentStatus($conn, $user_id, $semester_id);
-            if ($fee_status['status'] === 'unpaid') {
-                echo json_encode([
-                    'success' => false,
-                    'message' => 'Please clear your fee balance before registration'
-                ]);
-                break;
-            }
-            
-            
             $units = getAvailableUnits($conn, $user_id, $semester_id, $registration_type);
             
             echo json_encode([
@@ -98,25 +91,40 @@ class RegistrationController {
             break;
             
         case 'add_to_basket':
-            $semester_id = (int)$_POST['semester_id'];
-            $unit_id = (int)$_POST['unit_id'];
+            $semester_id = (int)($_POST['semester_id'] ?? 0);
+            $unit_id = (int)($_POST['unit_id'] ?? 0);
             $registration_type = $_POST['registration_type'] ?? 'regular';
             $is_retake = isset($_POST['is_retake']) ? (bool)$_POST['is_retake'] : false;
             
+            if (!$semester_id || !$unit_id) {
+                echo json_encode(['success' => false, 'message' => 'Missing required parameters']);
+                break;
+            }
+
             $result = addToBasket($conn, $user_id, $semester_id, $unit_id, $registration_type, $is_retake);
             echo json_encode($result);
             break;
             
         case 'remove_from_basket':
-            $basket_id = (int)$_POST['basket_id'];
+            $basket_id = (int)($_POST['basket_id'] ?? 0);
             
+            if (!$basket_id) {
+                echo json_encode(['success' => false, 'message' => 'Basket ID is required']);
+                break;
+            }
+
             $result = removeFromBasket($conn, $basket_id, $user_id);
             echo json_encode($result);
             break;
             
         case 'get_basket':
-            $semester_id = (int)$_POST['semester_id'];
+            $semester_id = (int)($_POST['semester_id'] ?? 0);
             
+            if (!$semester_id) {
+                echo json_encode(['success' => false, 'message' => 'Semester ID is required']);
+                break;
+            }
+
             $items = getBasketItems($conn, $user_id, $semester_id);
             $total_credits = calculateTotalCredits($items);
             
@@ -129,8 +137,13 @@ class RegistrationController {
             break;
             
         case 'clear_basket':
-            $semester_id = (int)$_POST['semester_id'];
+            $semester_id = (int)($_POST['semester_id'] ?? 0);
             
+            if (!$semester_id) {
+                echo json_encode(['success' => false, 'message' => 'Semester ID is required']);
+                break;
+            }
+
             clearBasket($conn, $user_id, $semester_id);
             echo json_encode([
                 'success' => true,
@@ -139,15 +152,25 @@ class RegistrationController {
             break;
             
         case 'complete_registration':
-            $semester_id = (int)$_POST['semester_id'];
+            $semester_id = (int)($_POST['semester_id'] ?? 0);
             
+            if (!$semester_id) {
+                echo json_encode(['success' => false, 'message' => 'Semester ID is required']);
+                break;
+            }
+
             $result = completeRegistration($conn, $user_id, $semester_id);
             echo json_encode($result);
             break;
             
         case 'get_registered_units':
-            $semester_id = (int)$_POST['semester_id'];
+            $semester_id = (int)($_POST['semester_id'] ?? 0);
             
+            if (!$semester_id) {
+                echo json_encode(['success' => false, 'message' => 'Semester ID is required']);
+                break;
+            }
+
             $units = getRegisteredUnits($conn, $user_id, $semester_id);
             $total_credits = calculateTotalCredits($units);
             
@@ -162,7 +185,7 @@ class RegistrationController {
         default:
             echo json_encode([
                 'success' => false,
-                'message' => 'Invalid action'
+                'message' => 'Invalid action: ' . $action
             ]);
             break;
     }
@@ -172,7 +195,7 @@ class RegistrationController {
         'success' => false,
         'message' => 'An error occurred: ' . $e->getMessage()
     ]);
-} */
+}
 
 $conn->close();
 ?>

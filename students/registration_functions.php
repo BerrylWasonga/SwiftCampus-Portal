@@ -126,37 +126,99 @@ function getAvailableUnits($conn, $user_id, $semester_id, $registration_type) {
     $course_id = $student_data['course_id'];
     $year_of_study = $student_data['current_year_of_study'] ?? 1;
     
-    // Get units assigned to this course, year, and semester
-    $stmt = $conn->prepare("
-        SELECT 
-            cu.id as unit_id,
-            cu.unit_code,
-            cu.unit_name,
-            cu.description,
-            cu.credit_hours,
-            cu.unit_type,
-            cua.is_compulsory,
-            cua.year_of_study,
-            CASE 
-                WHEN cr.id IS NOT NULL THEN TRUE 
-                ELSE FALSE 
-            END as already_registered
-        FROM course_units cu
-        JOIN course_unit_assignments cua ON cu.id = cua.unit_id
-        LEFT JOIN course_registrations cr ON (
-            cu.id = cr.unit_id 
-            AND cr.user_id = ? 
-            AND cr.semester_id = ?
-            AND cr.registration_status NOT IN ('rejected', 'cancelled')
-        )
-        WHERE cua.course_id = ?
-        AND cua.year_of_study = ?
-        AND cua.semester_id = ?
-        AND cu.status = 'active'
-        ORDER BY cua.is_compulsory DESC, cu.unit_code ASC
-    ");
+    $query = "";
+    $params = [];
+    $types = "";
+
+    if ($registration_type === 'regular') {
+        // Regular Registration: Units the student has never attempted before (success or pending/approved registration)
+        // Show all units for the student's course to allow registration for other years if needed
+        $query = "
+            SELECT 
+                cu.id as unit_id,
+                cu.unit_code,
+                cu.unit_name,
+                cu.description,
+                cu.credit_hours,
+                cu.unit_type,
+                cua.is_compulsory,
+                cua.year_of_study,
+                FALSE as already_registered
+            FROM course_units cu
+            JOIN course_unit_assignments cua ON cu.id = cua.unit_id
+            WHERE cua.course_id = ?
+            AND cua.semester_id = ?
+            AND cu.status = 'active'
+            AND cu.id NOT IN (
+                SELECT unit_id FROM course_registrations 
+                WHERE user_id = ? AND registration_status NOT IN ('rejected', 'cancelled')
+            )
+            AND cu.id NOT IN (
+                SELECT unit_id FROM grades WHERE user_id = ?
+            )
+            ORDER BY cua.year_of_study ASC, cua.is_compulsory DESC, cu.unit_code ASC
+        ";
+        $params = [$course_id, $semester_id, $user_id, $user_id];
+        $types = "iiii";
+    } elseif ($registration_type === 'supplementary') {
+        // Supplementary Registration: Units where the student's previous grade was a fail.
+        $query = "
+            SELECT 
+                cu.id as unit_id,
+                cu.unit_code,
+                cu.unit_name,
+                cu.description,
+                cu.credit_hours,
+                cu.unit_type,
+                1 as is_compulsory,
+                0 as year_of_study,
+                FALSE as already_registered
+            FROM course_units cu
+            JOIN grades g ON cu.id = g.unit_id
+            WHERE g.user_id = ? 
+            AND g.status = 'Fail'
+            AND cu.id NOT IN (
+                SELECT unit_id FROM course_registrations 
+                WHERE user_id = ? AND semester_id = ? AND registration_status NOT IN ('rejected', 'cancelled')
+            )
+            ORDER BY cu.unit_code ASC
+        ";
+        $params = [$user_id, $user_id, $semester_id];
+        $types = "iii";
+    } elseif ($registration_type === 'special') {
+        // Special Exams: Units the student missed, but only if they have a 'Special Exam' status approved by an admin
+        $query = "
+            SELECT 
+                cu.id as unit_id,
+                cu.unit_code,
+                cu.unit_name,
+                cu.description,
+                cu.credit_hours,
+                cu.unit_type,
+                1 as is_compulsory,
+                0 as year_of_study,
+                FALSE as already_registered
+            FROM course_units cu
+            JOIN requisitions r ON cu.id = r.unit_id
+            WHERE r.student_id = ? 
+            AND r.request_type = 'Special Exam'
+            AND r.status = 'Approved'
+            AND cu.id NOT IN (
+                SELECT unit_id FROM course_registrations 
+                WHERE user_id = ? AND semester_id = ? AND registration_status NOT IN ('rejected', 'cancelled')
+            )
+            ORDER BY cu.unit_code ASC
+        ";
+        $params = [$user_id, $user_id, $semester_id];
+        $types = "iii";
+    } else {
+        return [];
+    }
     
-    $stmt->bind_param("iiiii", $user_id, $semester_id, $course_id, $year_of_study, $semester_id);
+    $stmt = $conn->prepare($query);
+    if (!empty($params)) {
+        $stmt->bind_param($types, ...$params);
+    }
     $stmt->execute();
     $result = $stmt->get_result();
     $units = $result->fetch_all(MYSQLI_ASSOC);

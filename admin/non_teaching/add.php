@@ -101,11 +101,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label class="form-label">Password</label>
-                                <input type="password" name="password" class="form-control" required>
+                                <div class="input-group">
+                                    <input type="password" name="password" id="password" class="form-control" required>
+                                    <button class="btn btn-outline-secondary toggle-password" type="button" data-target="#password">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </div>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Confirm Password</label>
-                                <input type="password" name="confirm_password" class="form-control" required>
+                                <div class="input-group">
+                                    <input type="password" name="confirm_password" id="confirm_password" class="form-control" required>
+                                    <button class="btn btn-outline-secondary toggle-password" type="button" data-target="#confirm_password">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
@@ -119,5 +129,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </main>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="../assets/main.js"></script>
+    <script>
+    document.querySelectorAll('.toggle-password').forEach(button => {
+        button.addEventListener('click', function() {
+            const target = document.querySelector(this.getAttribute('data-target'));
+            const type = target.getAttribute('type') === 'password' ? 'text' : 'password';
+            target.setAttribute('type', type);
+            this.querySelector('i').classList.toggle('bi-eye');
+            this.querySelector('i').classList.toggle('bi-eye-slash');
+        });
+    });
+    </script>
 </body>
 </html>

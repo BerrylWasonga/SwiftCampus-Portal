@@ -9,13 +9,14 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
 
 $message = ''; $error = '';
 
-$courses = $conn->query("SELECT c.*, f.faculty_name FROM courses c LEFT JOIN faculties f ON c.faculty_id = f.id ORDER BY f.faculty_name, c.level, c.course_name")->fetch_all(MYSQLI_ASSOC);
+$courses = $conn->query("SELECT c.*, f.faculty_name FROM courses c JOIN programs p ON c.program_id = p.id JOIN faculties f ON p.faculty_id = f.id ORDER BY f.faculty_name, c.level, c.course_name")->fetch_all(MYSQLI_ASSOC);
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $first_name = trim($_POST["first_name"]);
     $last_name = trim($_POST["last_name"]);
     $email = trim($_POST["email"]);
     $course_id = $_POST["course_id"];
+    $password = $_POST["password"] ?: 'password123';
     
     // ... (Simplified logic for brevity, assuming standard insert as per original admin.php)
     // In a full implementation, I'd copy the full registration logic here.
@@ -46,12 +47,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
         $reg_no = $prefix . '/' . str_pad($next, 5, '0', STR_PAD_LEFT) . '/' . $year;
         
-        $pwd = password_hash('password123', PASSWORD_DEFAULT);
+        $pwd = password_hash($password, PASSWORD_DEFAULT);
         
         $ins = $conn->prepare("INSERT INTO users (first_name, last_name, email, password, reg_no, programme, course_id, role, status) VALUES (?, ?, ?, ?, ?, ?, ?, 'user', 'active')");
         $ins->bind_param("ssssssi", $first_name, $last_name, $email, $pwd, $reg_no, $prog, $course_id);
         
-        if ($ins->execute()) $message = "Student added! Reg No: $reg_no. Password: password123";
+        if ($ins->execute()) $message = "Student added! Reg No: $reg_no. Password: " . htmlspecialchars($password);
         else $error = "Failed to add student.";
     }
 }
@@ -92,6 +93,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                     <?php endforeach; ?>
                                 </select>
                             </div>
+                            <div class="col-md-12">
+                                <label>Set Password (Optional - defaults to 'password123')</label>
+                                <div class="input-group">
+                                    <input type="password" name="password" id="password" class="form-control" placeholder="password123">
+                                    <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                         <button class="btn btn-primary mt-4">Register Student</button>
                     </form>
@@ -103,6 +113,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="../assets/main.js"></script>
-    <script>$(document).ready(function() { $('.select2').select2(); });</script>
+    <script>
+    $(document).ready(function() { 
+        $('.select2').select2(); 
+        
+        $('#togglePassword').click(function() {
+            const type = $('#password').attr('type') === 'password' ? 'text' : 'password';
+            $('#password').attr('type', type);
+            $(this).find('i').toggleClass('bi-eye bi-eye-slash');
+        });
+    });
+    </script>
 </body>
 </html>

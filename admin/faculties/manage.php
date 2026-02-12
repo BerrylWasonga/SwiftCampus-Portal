@@ -31,7 +31,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
     elseif (isset($_POST['delete_faculty'])) {
         $id = $_POST["faculty_id"];
-        $check = $conn->prepare("SELECT COUNT(*) FROM courses WHERE faculty_id = ?");
+        $check = $conn->prepare("SELECT COUNT(*) FROM programs WHERE faculty_id = ?");
         $check->bind_param("i", $id);
         $check->execute();
         if ($check->get_result()->fetch_row()[0] > 0) $error = "Cannot delete faculty with existing courses.";
@@ -93,6 +93,9 @@ $faculties = $conn->query("SELECT * FROM faculties ORDER BY faculty_name ASC")->
                                         <td><?php echo htmlspecialchars($f['faculty_name']); ?></td>
                                         <td><?php echo htmlspecialchars($f['faculty_code']); ?></td>
                                         <td>
+                                            <a href="view.php?id=<?php echo $f['id']; ?>" class="btn btn-sm btn-outline-info">
+                                                <i class="bi bi-eye"></i> View
+                                            </a>
                                             <button class="btn btn-sm btn-outline-primary edit-faculty-btn"
                                                 data-bs-toggle="modal" data-bs-target="#editFacultyModal"
                                                 data-id="<?php echo $f['id']; ?>"
@@ -100,7 +103,7 @@ $faculties = $conn->query("SELECT * FROM faculties ORDER BY faculty_name ASC")->
                                                 data-code="<?php echo htmlspecialchars($f['faculty_code']); ?>">
                                                 <i class="bi bi-pencil"></i>
                                             </button>
-                                            <form method="post" class="d-inline" onsubmit="return confirm('Delete?');">
+                                            <form method="post" class="d-inline" onsubmit="return confirm('Delete? This will remove all programs, courses, and units under this faculty.');">
                                                 <input type="hidden" name="delete_faculty" value="1">
                                                 <input type="hidden" name="faculty_id" value="<?php echo $f['id']; ?>">
                                                 <button class="btn btn-sm btn-danger"><i class="bi bi-trash"></i></button>

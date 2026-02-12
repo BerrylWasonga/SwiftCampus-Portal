@@ -28,7 +28,7 @@ if (!$student) {
 }
 
 // Fetch Courses for Dropdown
-$courses = $conn->query("SELECT c.*, f.faculty_name FROM courses c LEFT JOIN faculties f ON c.faculty_id = f.id ORDER BY f.faculty_name, c.level, c.course_name")->fetch_all(MYSQLI_ASSOC);
+$courses = $conn->query("SELECT c.*, f.faculty_name FROM courses c JOIN programs p ON c.program_id = p.id JOIN faculties f ON p.faculty_id = f.id ORDER BY f.faculty_name, c.level, c.course_name")->fetch_all(MYSQLI_ASSOC);
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $first_name = trim($_POST["first_name"]);

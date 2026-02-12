@@ -127,6 +127,16 @@ $conn->close();
         .text-cyan {
             color: #40c4ff;
         }
+        .toggle-password {
+            background: transparent;
+            border: none;
+            color: #778da9;
+            cursor: pointer;
+            padding: 0 10px;
+        }
+        .toggle-password:hover {
+            color: #40c4ff;
+        }
     </style>
 </head>
 <body>
@@ -156,12 +166,22 @@ $conn->close();
 
             <div class="mb-3 text-start">
                 <label class="form-label">New Password</label>
-                <input type="password" name="password" class="form-control" placeholder="Enter new password" required minlength="6">
+                <div class="input-group">
+                    <input type="password" name="password" id="password" class="form-control" placeholder="Enter new password" required minlength="6">
+                    <button class="toggle-password" type="button" data-target="#password">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
             </div>
 
             <div class="mb-4 text-start">
                 <label class="form-label">Confirm New Password</label>
-                <input type="password" name="confirm_password" class="form-control" placeholder="Confirm new password" required minlength="6">
+                <div class="input-group">
+                    <input type="password" name="confirm_password" id="confirm_password" class="form-control" placeholder="Confirm new password" required minlength="6">
+                    <button class="toggle-password" type="button" data-target="#confirm_password">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
             </div>
 
             <button type="submit" class="btn btn-cyan btn-lg w-100 mb-3">Update Password</button>
@@ -173,5 +193,16 @@ $conn->close();
     </div>
 </div>
 
+    <script>
+    document.querySelectorAll('.toggle-password').forEach(button => {
+        button.addEventListener('click', function() {
+            const target = document.querySelector(this.getAttribute('data-target'));
+            const type = target.getAttribute('type') === 'password' ? 'text' : 'password';
+            target.setAttribute('type', type);
+            this.querySelector('i').classList.toggle('fa-eye');
+            this.querySelector('i').classList.toggle('fa-eye-slash');
+        });
+    });
+    </script>
 </body>
 </html>

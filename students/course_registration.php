@@ -363,47 +363,71 @@ $conn->close();
                 return;
             }
             
-            let html = '<div class="row g-3">';
+            // Group units by Year Level
+            const groupedUnits = {};
             units.forEach(unit => {
-                const disabled = unit.already_registered ? 'disabled' : '';
-                const checkedClass = unit.already_registered ? 'opacity-50' : '';
-                const badge = unit.is_compulsory ? '<span class="badge bg-danger ms-2">Required</span>' : '<span class="badge bg-secondary ms-2">Elective</span>';
+                const year = unit.year_of_study || 0;
+                if (!groupedUnits[year]) groupedUnits[year] = [];
+                groupedUnits[year].push(unit);
+            });
+
+            let html = '';
+            
+            // Iterate through years (sorted)
+            Object.keys(groupedUnits).sort().forEach(year => {
+                const yearLabel = year === '0' ? 'Other/Misc' : `Year ${year}`;
+                const icon = year === '0' ? 'grid' : 'layers';
                 
                 html += `
-                    <div class="col-12">
-                        <div class="card unit-card ${checkedClass}" data-unit-id="${unit.unit_id}">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div class="form-check flex-grow-1">
-                                        <input class="form-check-input unit-checkbox" type="checkbox" 
-                                               value="${unit.unit_id}" 
-                                               data-credits="${unit.credit_hours}"
-                                               id="unit_${unit.unit_id}" ${disabled}>
-                                        <label class="form-check-label w-100" for="unit_${unit.unit_id}">
-                                            <div class="d-flex justify-content-between align-items-start">
-                                                <div>
-                                                    <h6 class="mb-1">
-                                                        <strong>${unit.unit_code}</strong> - ${unit.unit_name}
+                    <div class="year-section mb-4">
+                        <h5 class="border-bottom pb-2 mb-3 text-primary d-flex align-items-center">
+                            <i class="bi bi-${icon} me-2"></i> ${yearLabel}
+                        </h5>
+                        <div class="row g-3">
+                `;
+                
+                groupedUnits[year].forEach(unit => {
+                    const disabled = unit.already_registered ? 'disabled' : '';
+                    const checkedClass = unit.already_registered ? 'opacity-50' : '';
+                    const badge = unit.is_compulsory ? '<span class="badge bg-danger ms-2">Required</span>' : '<span class="badge bg-secondary ms-2">Elective</span>';
+                    
+                    html += `
+                        <div class="col-12 col-md-6">
+                            <div class="card unit-card h-100 ${checkedClass}" data-unit-id="${unit.unit_id}">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div class="form-check flex-grow-1">
+                                            <input class="form-check-input unit-checkbox" type="checkbox" 
+                                                   value="${unit.unit_id}" 
+                                                   data-credits="${unit.credit_hours}"
+                                                   id="unit_${unit.unit_id}" ${disabled}>
+                                            <label class="form-check-label w-100" for="unit_${unit.unit_id}">
+                                                <div class="d-flex justify-content-between align-items-start">
+                                                    <div>
+                                                        <h6 class="mb-1">
+                                                            <strong>${unit.unit_code}</strong>
+                                                        </h6>
+                                                        <p class="mb-0 fw-bold small">${unit.unit_name}</p>
                                                         ${badge}
-                                                    </h6>
-                                                    <p class="mb-1 text-muted small">${unit.description || 'No description available'}</p>
+                                                    </div>
+                                                    <span class="badge bg-info text-dark credit-badge">${unit.credit_hours} Cr</span>
                                                 </div>
-                                                <span class="badge bg-info credit-badge">${unit.credit_hours} Credits</span>
-                                            </div>
-                                        </label>
+                                            </label>
+                                        </div>
                                     </div>
+                                    ${unit.already_registered ? '<small class="text-success"><i class="bi bi-check-circle-fill"></i> Registered</small>' : ''}
                                 </div>
-                                ${unit.already_registered ? '<small class="text-success"><i class="bi bi-check-circle-fill"></i> Already Registered</small>' : ''}
                             </div>
                         </div>
-                    </div>
-                `;
+                    `;
+                });
+                
+                html += '</div></div>';
             });
-            html += '</div>';
             
             html += `
-                <div class="mt-4 text-end">
-                    <button type="button" class="btn btn-primary btn-lg" id="addToBasketBtn">
+                <div class="mt-4 text-end sticky-bottom bg-white py-3 border-top">
+                    <button type="button" class="btn btn-primary btn-lg shadow-sm" id="addToBasketBtn">
                         <i class="bi bi-cart-plus me-2"></i>Add Selected to Basket
                     </button>
                 </div>
@@ -586,9 +610,13 @@ $conn->close();
             $('#loadingOverlay').removeClass('show');
         }
         
-        // Initial load of basket
+        // Initial load of basket and units
         if (semesterId) {
             loadBasket();
+            
+            // Auto-load regular units on page load
+            $('#registrationType').val('regular');
+            $('#getUnitsBtn').prop('disabled', false).trigger('click');
         }
     });
     </script>
