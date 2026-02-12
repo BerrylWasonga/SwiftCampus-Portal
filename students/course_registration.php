@@ -220,7 +220,6 @@ $conn->close();
                                     </button>
                                 </div>
                             </div>
-
                             <hr>
 
                             <!-- Units List -->
