@@ -199,9 +199,12 @@ $conn->close();
                                 <div class="col-md-8">
                                     <label for="registrationType" class="form-label fw-bold">
                                         <i class="bi bi-tag me-1"></i>Registration Type
-                                    </label>
+                                    </label>                     
                                     <select class="form-select" id="registrationType">
                                         <option value="">-- Select Registration Type --</option>
+                                        <option value="regular">Regular Registration</option>
+                                        <option value="supplementary">Supplementary Registration</option>
+                                        <option value="special">Special/Repeat Registration</option>
                                         <?php if (!empty($reg_windows)): ?>
                                             <?php foreach ($reg_windows as $window): ?>
                                                 <option value="<?php echo htmlspecialchars($window['registration_type']); ?>">
