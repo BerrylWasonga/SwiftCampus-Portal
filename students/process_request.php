@@ -16,16 +16,34 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (isset($_POST["request_type"]) && isset($_POST["reason"])) {
         $request_type = trim($_POST["request_type"]);
         $reason = trim($_POST["reason"]);
+        $unit_id = isset($_POST["unit_id"]) && !empty($_POST["unit_id"]) ? (int)$_POST["unit_id"] : null;
 
         // Check for empty fields
-        if (empty($request_type) || empty($reason)) {
-            $_SESSION['error'] = "All fields are required.";
+        if (empty($request_type) || empty($reason) || $request_type === "Request Type") {
+            $_SESSION['error'] = "All fields are required and must be valid.";
             header("Location: academic_R.php");
             exit();
         }
 
-        // Database operation would go here
-        $_SESSION['success'] = "Request submitted successfully.";
+        // Insert into database
+        $sql = "INSERT INTO requisitions (student_id, request_type, unit_id, reason, status) 
+                VALUES (?, ?, ?, ?, 'Pending')";
+        
+        $stmt = $conn->prepare($sql);
+        if (!$stmt) {
+            $_SESSION['error'] = "Database error: " . $conn->error;
+            header("Location: academic_R.php");
+            exit();
+        }
+        
+        $stmt->bind_param("isis", $student_id, $request_type, $unit_id, $reason);
+        
+        if ($stmt->execute()) {
+            $_SESSION['success'] = "Request submitted successfully.";
+        } else {
+            $_SESSION['error'] = "Error submitting request: " . $stmt->error;
+        }
+        $stmt->close();
     } else {
         $_SESSION['error'] = "Invalid form submission.";
     }
