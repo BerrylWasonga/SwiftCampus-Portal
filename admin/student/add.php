@@ -52,8 +52,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $seq_stmt->execute();
         $seq_res = $seq_stmt->get_result()->fetch_assoc();
         $next_seq = $seq_res['count'] + 1;
+
+        //$reg_no = $course_code . '/Y' . $year_level . '/' . $admission_year . '/' . str_pad($next_seq, 3, '0', STR_PAD_LEFT);
         
-        $reg_no = $course_code . '/Y' . $year_level . '/' . $admission_year . '/' . str_pad($next_seq, 3, '0', STR_PAD_LEFT);
+        $reg_no = $course_code  . '/' . $admission_year . '/' . str_pad($next_seq, 5, '0', STR_PAD_LEFT);
         
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
         
