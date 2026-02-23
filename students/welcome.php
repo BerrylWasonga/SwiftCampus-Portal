@@ -24,8 +24,12 @@ if (empty($full_name)) {
 }
 
 // Fetch documents BEFORE including any partials
-$doc_stmt = $conn->prepare("SELECT * FROM student_documents WHERE user_id = ? ORDER BY created_at DESC");
-$doc_stmt->bind_param("i", $_SESSION['user_id']);
+$doc_stmt = $conn->prepare("SELECT * FROM student_documents 
+                            WHERE user_id = ? 
+                            OR (course_id = ? AND course_id IS NOT NULL) 
+                            OR (faculty_id = ? AND faculty_id IS NOT NULL) 
+                            ORDER BY created_at DESC");
+$doc_stmt->bind_param("iii", $_SESSION['user_id'], $user['course_id'], $user['faculty_id']);
 $doc_stmt->execute();
 $documents = $doc_stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 $doc_stmt->close();
