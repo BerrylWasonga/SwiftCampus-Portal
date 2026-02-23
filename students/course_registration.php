@@ -333,7 +333,7 @@ $conn->close();
     <script>
     $(document).ready(function() {
         const semesterId = <?php echo $current_semester['id'] ?? 'null'; ?>;
-        let selectedUnits = new Set();
+        let selectedUnits = new window.Set();
         
         // Enable Get Units button when registration type is selected
         $('#registrationType').on('change', function() {

@@ -8,7 +8,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
 }
 
 // Include database connection
-include '../config.php';
+include __Dir__ .'/../config.php';
 
 // Fetch ALL user details using the session user_id
 $stmt = $conn->prepare("SELECT * FROM users WHERE id = ?");
