@@ -5,7 +5,7 @@
                 <i class="bi bi-list fs-4"></i>
             </button>
             <a class="navbar-brand" href="#">
-                <i class="bi bi-mortarboard-fill me-2"></i>Chuka University
+                <i class="bi bi-mortarboard-fill me-2"></i>OTIENO ACADEMY
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
